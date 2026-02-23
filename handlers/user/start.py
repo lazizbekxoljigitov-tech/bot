@@ -63,16 +63,24 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
                     
                     text = await AnimeService.get_anime_info_text(anime_id)
                     poster = AnimeService.get_poster(anime)
+                    
                     if poster:
-                        await message.answer_photo(
-                            photo=poster,
-                            caption=text,
-                            reply_markup=anime_view_keyboard(anime_id, is_fav),
-                        )
+                        try:
+                            await message.answer_photo(
+                                photo=poster,
+                                caption=text,
+                                reply_markup=anime_view_keyboard(anime_id, is_fav),
+                            )
+                        except Exception as e:
+                            logger.error(f"Poster yuborishda xato (anime_{anime_id}): {e}")
+                            await message.answer(
+                                text, reply_markup=anime_view_keyboard(anime_id, is_fav)
+                            )
                     else:
                         await message.answer(
                             text, reply_markup=anime_view_keyboard(anime_id, is_fav)
                         )
+
                     return
             except (ValueError, TypeError):
                 pass
@@ -109,7 +117,7 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
             reply_markup=user_main_menu(),
         )
     except Exception as e:
-        logger.error(f"Error sending welcome photo: {e}")
+        logger.error(f"Xush kelibsiz rasmini (WELCOME) yuborishda xato: {e}")
         await message.answer(
             welcome_text,
             reply_markup=user_main_menu(),

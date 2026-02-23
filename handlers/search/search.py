@@ -208,14 +208,20 @@ async def _show_anime_view(message: Message, anime_id: int) -> None:
     
     text = await AnimeService.get_anime_info_text(anime_id)
     poster = AnimeService.get_poster(anime)
+    
     if poster:
-        await message.answer_photo(
-            photo=poster,
-            caption=text,
-            reply_markup=anime_view_keyboard(anime_id, is_fav),
-        )
+        try:
+            await message.answer_photo(
+                photo=poster,
+                caption=text,
+                reply_markup=anime_view_keyboard(anime_id, is_fav),
+            )
+        except Exception as e:
+            logger.error(f"Poster yuborishda xato (search view {anime_id}): {e}")
+            await message.answer(text, reply_markup=anime_view_keyboard(anime_id, is_fav))
     else:
         await message.answer(text, reply_markup=anime_view_keyboard(anime_id, is_fav))
+
 
 
 # ---- Pagination Callbacklar ----

@@ -3,13 +3,16 @@ handlers/user/shorts.py - Shorts videolarini ko'rish.
 Emoji va premium dizayn bilan.
 """
 
+import logging
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from models.shorts import ShortsModel
 from models.user import UserModel
 from keyboards.inline import shorts_keyboard
 
+logger = logging.getLogger(__name__)
 router = Router(name="user_shorts")
+
 
 
 @router.message(F.text == "🎬 Shorts")
@@ -47,8 +50,8 @@ async def show_shorts_start(message: Message) -> None:
         logger.error(f"Shorts yuborishda xatolik: {e}")
         await message.answer(
             f"🎬 <b>Shorts yuklashda xatolik yuz berdi.</b>\n"
-            f"Video fayl o'chirilgan yoki yaroqsiz bo'lishi mumkin.\n\n"
-            f"ID: <code>{first_short['id']}</code>",
+            f"Sizda bot tokeni o'zgargan yoki fayl ID'si Telegram tomonidan o'chirilgan bo'lishi mumkin.\n\n"
+            f"<b>Fayl ID:</b> <code>{first_short['short_video_file_id']}</code>",
             reply_markup=shorts_keyboard(first_short["id"], first_short["anime_id"], 0, total),
         )
 

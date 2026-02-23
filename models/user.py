@@ -73,12 +73,13 @@ class UserModel:
         return [dict(r) for r in rows]
 
     @staticmethod
-    async def get_user_count() -> int:
+    async def get_count() -> int:
         """Return the total number of registered users."""
         db = await Database.connect()
         cursor = await db.execute("SELECT COUNT(*) as cnt FROM users")
         row = await cursor.fetchone()
         return row["cnt"] if row else 0
+
 
     @staticmethod
     async def get_vip_users() -> list[dict]:

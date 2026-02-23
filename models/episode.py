@@ -123,3 +123,12 @@ class EpisodeModel:
         )
         rows = await cursor.fetchall()
         return [dict(r) for r in rows]
+
+    @staticmethod
+    async def get_total_count() -> int:
+        """Return the total number of episodes in the database."""
+        db = await Database.connect()
+        cursor = await db.execute("SELECT COUNT(*) as cnt FROM episodes")
+        row = await cursor.fetchone()
+        return row["cnt"] if row else 0
+

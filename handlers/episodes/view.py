@@ -186,5 +186,10 @@ async def watch_episode(callback: CallbackQuery, state: FSMContext) -> None:
         )
     except Exception as e:
         logger.error("Video yuborishda xato: %s", str(e))
-        await callback.answer("Video yuborishda xatolik yuz berdi.")
+        await callback.message.answer(
+            f"❌ <b>Videoni yuborib bo'lmadi.</b>\n"
+            f"Telegram serverida fayl topilmadi yoki token o'zgargan.\n\n"
+            f"<b>Fayl ID:</b> <code>{episode['video_file_id']}</code>"
+        )
+        await callback.answer("Video yuborishda xatolik!")
     await callback.answer()
