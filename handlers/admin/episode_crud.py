@@ -14,15 +14,15 @@ from states.episode import AddEpisodeStates, EditEpisodeStates
 from models.anime import AnimeModel
 from models.episode import EpisodeModel
 from models.admin import AdminModel
+from filters.admin import is_admin
 from keyboards.reply import cancel_keyboard, vip_choice_keyboard, admin_main_menu
-from keyboards.inline import anime_select_keyboard
+from keyboards.inline import anime_select_keyboard, episodes_keyboard, admin_fix_media_keyboard
 
 logger = logging.getLogger(__name__)
 router = Router(name="admin_episode_crud")
 
 
-async def is_admin(message: Message) -> bool:
-    return await AdminModel.is_admin(message.from_user.id)
+
 
 
 # ==============================================================

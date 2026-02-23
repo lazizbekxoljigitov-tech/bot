@@ -29,14 +29,18 @@ class AdminModel:
         """Yangi admin qo'shish."""
         db = await Database.connect()
         try:
+            # INSERT OR IGNORE ishlatishimiz mumkin, lekin errorni bilish yaxshi
             await db.execute(
                 "INSERT INTO admins (telegram_id, full_name, role) VALUES (?, ?, ?)",
-                (telegram_id, full_name, role),
+                (int(telegram_id), str(full_name), str(role)),
             )
             await db.commit()
             return True
-        except Exception:
+        except Exception as e:
+            from main import logger
+            logger.error(f"Admin qo'shishda xato: {e}")
             return False
+
 
     @staticmethod
     async def remove_admin(telegram_id: int) -> bool:

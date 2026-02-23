@@ -13,16 +13,16 @@ from config import ADMIN_IDS
 from states.anime import AddAnimeStates, EditAnimeStates
 from models.anime import AnimeModel
 from models.admin import AdminModel
-from keyboards.reply import cancel_keyboard, skip_keyboard, vip_choice_keyboard, admin_main_menu
-from keyboards.inline import anime_select_keyboard
+from keyboards.reply import cancel_keyboard, skip_keyboard, vip_choice_keyboard
+from keyboards.inline import anime_view_keyboard, anime_select_keyboard, admin_fix_media_keyboard, admin_main_menu
+from filters.admin import is_admin
 
 logger = logging.getLogger(__name__)
 router = Router(name="admin_anime_crud")
 
 
 # ---- Faqat adminlar uchun filter ----
-async def is_admin(message: Message) -> bool:
-    return await AdminModel.is_admin(message.from_user.id)
+
 
 
 # ==============================================================

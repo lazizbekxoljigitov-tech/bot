@@ -10,12 +10,13 @@ from aiogram.types import Message
 from database import Database
 from config import DB_PATH, LOG_FILE
 from models.admin import AdminModel
+from filters.admin import is_admin
+
 
 logger = logging.getLogger(__name__)
 router = Router(name="admin_tools")
 
-async def is_admin(message: Message) -> bool:
-    return await AdminModel.is_admin(message.from_user.id)
+
 
 @router.message(F.text == "🔍 DB Tekshirish", is_admin)
 async def admin_tools_menu(message: Message):

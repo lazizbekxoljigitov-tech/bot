@@ -14,6 +14,8 @@ from models.user import UserModel
 from models.admin import AdminModel
 from utils.images import IMAGES
 from keyboards.reply import cancel_keyboard, admin_main_menu, confirm_keyboard
+from filters.admin import is_admin
+
 
 logger = logging.getLogger(__name__)
 router = Router(name="admin_broadcast")
@@ -22,8 +24,7 @@ class BroadcastStates(StatesGroup):
     waiting_message = State()
     confirm = State()
 
-async def is_admin(message: Message) -> bool:
-    return await AdminModel.is_admin(message.from_user.id)
+
 
 @router.message(F.text == "📤 Xabar yuborish", is_admin)
 @router.callback_query(F.data == "admin_broadcast", is_admin)

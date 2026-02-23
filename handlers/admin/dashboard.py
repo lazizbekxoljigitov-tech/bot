@@ -20,6 +20,8 @@ from keyboards.inline import (
 )
 from keyboards.reply import cancel_keyboard, admin_main_menu
 from loader import bot
+from filters.admin import is_admin
+
 
 logger = logging.getLogger(__name__)
 router = Router(name="admin_dashboard")
@@ -48,8 +50,7 @@ async def global_cancel_handler(message: Message, state: FSMContext) -> None:
         )
 
 
-async def is_admin(message: Message) -> bool:
-    return await AdminModel.is_admin(message.from_user.id)
+
 
 @router.message(F.text == "⚙️ Dashbord", is_admin)
 
@@ -182,32 +183,53 @@ async def process_add_admin(message: Message, state: FSMContext) -> None:
     tg_id = None
     full_name = "Nomalum"
     
-    if message.forward_from:
-        tg_id = message.forward_from.id
-        full_name = message.forward_from.full_name
+    # 1. Forward qilingan xabarni tekshirish (Yangi aiogram 3.x/Telegram API uslubi)
+    if message.forward_origin:
+        origin = message.forward_origin
+        if hasattr(origin, 'sender_user'):
+            tg_id = origin.sender_user.id
+            full_name = origin.sender_user.full_name
+        elif hasattr(origin, 'sender_chat'):
+            tg_id = origin.sender_chat.id
+            full_name = origin.sender_chat.title
+        else:
+            # Privacy settings tufayli ID yopiq bo'lishi mumkin
+            await message.reply(
+                "❌ <b>Xatolik!</b>\n\n"
+                "Ushbu foydalanuvchining maxfiylik sozlamalari ID raqamini olishga ruxsat bermaydi. "
+                "Iltimos, uning ID raqamini qo'lda kiriting."
+            )
+            return
+
+    # 2. Text orqali ID kiritilganini tekshirish
     elif message.text and message.text.isdigit():
         tg_id = int(message.text)
         
     if not tg_id:
-        await message.answer("❌ Noto'g'ri ID. Iltimos raqam kiriting.")
+        await message.reply("❌ Noto'g'ri ID. Iltimos raqam kiriting yoki xabar forward qiling.")
         return
+
         
     success = await AdminModel.add_admin(tg_id, full_name)
     await state.clear()
     
     if success:
+        # Yangi adminni ham is_admin deb tanishimiz kerak (bazada borligi uchun)
         await message.reply(
             f"✅ <b>Yangi admin tayinlandi!</b>\n\n"
             f"👤 <b>Ism:</b> {full_name}\n"
-            f"🆔 <b>ID:</b> <code>{tg_id}</code>",
+            f"🆔 <b>ID:</b> <code>{tg_id}</code>\n\n"
+            "Endi ushbu foydalanuvchi barcha admin buyruqlaridan foydalana oladi.",
             reply_markup=admin_main_menu()
         )
     else:
         await message.reply(
             "❌ <b>Xatolik!</b>\n\n"
-            "Ushbu foydalanuvchi allaqachon admin bo'lishi mumkin yoki bazada xatolik yuz berdi.", 
+            "Ushbu foydalanuvchi allaqachon admindir yoki bazada texnik xatolik yuz berdi. "
+            "Iltimos, loglarni tekshiring.", 
             reply_markup=admin_main_menu()
         )
+
         
     await show_dashboard(message, state)
 
