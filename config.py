@@ -8,7 +8,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # ---- Load .env file ----
-load_dotenv()
+_env_file = os.getenv("ENV_FILE", ".env")
+load_dotenv(_env_file)
+
 
 # ---- Base directory ----
 BASE_DIR = Path(__file__).resolve().parent

@@ -89,9 +89,26 @@ def register_middlewares() -> None:
 
 async def on_startup() -> None:
     """Bot ishga tushganda bajariladigan funksiya."""
+    from config import DB_PATH
+    import os
+    
+    # ---- MA'LUMOTLAR BAZASINI TOZALASH (User Request: Clean Start) ----
+    # Har doim yangidan boshlash uchun eski bazani o'chirib yuboramiz
+    if os.path.exists(DB_PATH):
+        try:
+            os.remove(DB_PATH)
+            logger.info("Eski ma'lumotlar bazasi o'chirildi (Clean Start).")
+        except Exception as e:
+            logger.warning(f"Bazani o'chirishda xatolik: {e}")
+
+    # Papka mavjudligini tekshirish
+    db_dir = os.path.dirname(DB_PATH)
+    os.makedirs(db_dir, exist_ok=True)
+
     logger.info("Ma'lumotlar bazasi yaratilmoqda...")
     await Database.create_tables()
     logger.info("Ma'lumotlar bazasi tayyor.")
+
 
     bot_info = await bot.get_me()
     logger.info("Bot ishga tushdi: @%s", bot_info.username)
@@ -113,9 +130,24 @@ async def main() -> None:
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
 
+    from config import BOT_TOKEN
+
+
     try:
+        # Bot username ni olish (tokenni tekshirish)
+        bot_info = await bot.get_me()
+        logger.info("="*40)
+        logger.info(f"BOT ISHGA TUSHMOQDA: @{bot_info.username}")
+        logger.info(f"TOKEN: {BOT_TOKEN[:10]}...{BOT_TOKEN[-5:]}")
+        logger.info("="*40)
+
+        logger.info("Webhook tozalanmoqda va eski xabarlar o'chirilmoqda...")
+        await bot.delete_webhook(drop_pending_updates=True)
+        
         logger.info("Polling boshlanmoqda...")
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+
+
     except Exception as e:
         logger.critical("Bot ishga tushishda xatolik: %s", str(e))
         raise
