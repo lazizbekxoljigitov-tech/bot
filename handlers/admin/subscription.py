@@ -40,20 +40,36 @@ async def add_channel_start(message: Message, state: FSMContext) -> None:
 async def add_channel_id(message: Message, state: FSMContext) -> None:
     await state.update_data(channel_id=message.text.strip())
     await state.set_state(AddChannelStates.channel_link)
-    await message.answer("Kanal havolasini kiriting:")
+    await message.answer("Kanal havolasini kiriting (e.g., https://t.me/kanal_link):")
 
+@router.message(AddChannelStates.channel_link, is_admin)
+async def add_channel_link(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    channel_id = data.get("channel_id")
+    channel_link = message.text.strip()
+    
     try:
-        await ChannelModel.add(data["channel_id"], message.text.strip())
-        await message.answer(f"✔ <b>Kanal qo'shildi!</b>", reply_markup=admin_main_menu())
+        await ChannelModel.add(channel_id, channel_link)
+        await state.clear()
+        await message.answer(f"✅ <b>Kanal qo'shildi!</b>", reply_markup=admin_main_menu())
     except Exception as e:
         logger.error(f"Add channel error: {e}")
-        await message.answer(f"✖ <b>Xatolik:</b> {e}", reply_markup=admin_main_menu())
+        await message.answer(f"❌ <b>Xatolik:</b> {e}", reply_markup=admin_main_menu())
 
-
+@router.message(F.text.startswith("/remove_channel"), is_admin)
+async def remove_channel_handler(message: Message) -> None:
+    parts = message.text.split()
+    if len(parts) < 2:
+        await message.answer("⚠️ Format: <code>/remove_channel [id]</code>")
+        return
+        
     try:
-        await ChannelModel.remove(parts[1])
-        await message.answer(f"✔ <b>Kanal o'chirildi!</b>")
+        success = await ChannelModel.remove(parts[1])
+        if success:
+            await message.answer(f"✅ <b>Kanal o'chirildi!</b>")
+        else:
+            await message.answer(f"❌ <b>Xatolik:</b> Kanal topilmadi.")
     except Exception as e:
         logger.error(f"Remove channel error: {e}")
-        await message.answer(f"✖ <b>Xatolik:</b> {e}")
+        await message.answer(f"❌ <b>Xatolik:</b> {e}")
 
