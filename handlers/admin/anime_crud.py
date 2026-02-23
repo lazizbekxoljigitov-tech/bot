@@ -364,3 +364,17 @@ async def delete_anime_confirmed(callback: CallbackQuery) -> None:
         await callback.message.answer(f"✖ <b>O'chirishda xatolik:</b> {e}")
 
     await callback.answer()
+
+
+@router.callback_query(F.data.startswith("fix_anime_poster:"), is_admin)
+async def fix_anime_poster_start(callback: CallbackQuery, state: FSMContext) -> None:
+    """Quick fix for broken anime poster."""
+    anime_id = int(callback.data.split(":")[1])
+    await state.update_data(edit_anime_id=anime_id, edit_field="poster_file_id")
+    await state.set_state(EditAnimeStates.new_value)
+    
+    await callback.message.answer(
+        "🖼 <b>Posterni yangilash (Quick Fix)</b>\n\nYangi poster rasm yuboring yoki rasm URL manzilini kiriting:",
+        reply_markup=cancel_keyboard()
+    )
+    await callback.answer()

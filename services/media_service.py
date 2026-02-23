@@ -38,10 +38,13 @@ class MediaService:
             
             logger.error(f"Media error (photo): {e} | Context: {context_info}")
             
-            # Notify admins
+            # Notify admins with possible fix button
+            from keyboards.inline import admin_fix_media_keyboard
+            fix_kb = admin_fix_media_keyboard(context_info, "photo")
+            
             for admin_id in ADMIN_IDS:
                 try:
-                    await bot.send_message(admin_id, error_msg)
+                    await bot.send_message(admin_id, error_msg, reply_markup=fix_kb)
                 except Exception:
                     pass
             
@@ -75,11 +78,14 @@ class MediaService:
             
             logger.error(f"Media error (video): {e} | Context: {context_info}")
             
-            # Notify admins
+            from keyboards.inline import admin_fix_media_keyboard
+            fix_kb = admin_fix_media_keyboard(context_info, "video")
+            
             for admin_id in ADMIN_IDS:
                 try:
-                    await bot.send_message(admin_id, error_msg)
+                    await bot.send_message(admin_id, error_msg, reply_markup=fix_kb)
                 except Exception:
                     pass
             
             raise e
+

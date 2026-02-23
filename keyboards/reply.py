@@ -43,8 +43,9 @@ def admin_main_menu() -> ReplyKeyboardMarkup:
             ],
             [
                 KeyboardButton(text="❌ Anime o'chirish"),
-                KeyboardButton(text="🎬 Shorts qo'shish"),
+                KeyboardButton(text="🎬 Shorts boshqarish"),
             ],
+
             # QISMLAR BOSHQARUVI
             [
                 KeyboardButton(text="➕ Qism qo'shish"),

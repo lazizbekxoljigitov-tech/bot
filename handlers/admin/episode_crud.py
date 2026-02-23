@@ -353,3 +353,22 @@ async def delete_episode_confirmed(callback: CallbackQuery) -> None:
         await callback.message.answer(f"✖ <b>O'chirishda xatolik:</b> {e}")
 
     await callback.answer()
+
+
+@router.callback_query(F.data.startswith("fix_ep_video:"), is_admin)
+async def fix_episode_video_start(callback: CallbackQuery, state: FSMContext) -> None:
+    """Quick fix for broken episode video."""
+    episode_id = int(callback.data.split(":")[1])
+    # Hozircha episode_crud da faqat text orqali yangilash bor
+    # EditEpisodeStates ga video kiritish holatini qo'shishimiz kerak yoki new_value ga video ham qabul qiladigan qilishimiz kerak
+    # Biz EditEpisodeStates ga video holatini qo'shamiz
+    from states.episode import EditEpisodeStates
+    await state.update_data(edit_episode_id=episode_id, edit_field="video_file_id")
+    await state.set_state(EditEpisodeStates.new_value)
+    
+    await callback.message.answer(
+        "🎞 <b>Videoni yangilash (Quick Fix)</b>\n\nYangi video faylni yuboring:",
+        reply_markup=cancel_keyboard()
+    )
+    await callback.answer()
+

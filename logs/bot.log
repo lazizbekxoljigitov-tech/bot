@@ -1,0 +1,57 @@
+2026-02-23 17:46:40 | INFO     | __main__ | Polling boshlanmoqda...
+2026-02-23 17:46:40 | INFO     | __main__ | Ma'lumotlar bazasi yaratilmoqda...
+2026-02-23 17:46:40 | INFO     | __main__ | Ma'lumotlar bazasi tayyor.
+2026-02-23 17:46:41 | INFO     | __main__ | Bot ishga tushdi: @AniLunaDubbingBot
+2026-02-23 17:46:41 | INFO     | aiogram.dispatcher | Start polling
+2026-02-23 17:46:41 | INFO     | aiogram.dispatcher | Run polling for bot @AniLunaDubbingBot id=8416403561 - 'Luna Dubing Bot'
+2026-02-23 17:46:41 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=⌂ Bosh sahifa
+2026-02-23 17:46:41 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=⌂ Bosh sahifa
+2026-02-23 17:46:41 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=⌂ Bosh sahifa
+2026-02-23 17:46:41 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=⌂ Bosh sahifa
+2026-02-23 17:46:41 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=⌂ Bosh sahifa
+2026-02-23 17:46:41 | WARNING  | middlewares.throttling | Throttle | user_id=8194599016 | juda tez xabar yubormoqda
+2026-02-23 17:46:41 | INFO     | aiogram.event | Update id=74964470 is handled. Duration 18 ms by bot id=8416403561
+2026-02-23 17:46:41 | WARNING  | middlewares.throttling | Throttle | user_id=8194599016 | juda tez xabar yubormoqda
+2026-02-23 17:46:41 | INFO     | aiogram.event | Update id=74964471 is handled. Duration 18 ms by bot id=8416403561
+2026-02-23 17:46:41 | WARNING  | middlewares.throttling | Throttle | user_id=8194599016 | juda tez xabar yubormoqda
+2026-02-23 17:46:41 | INFO     | aiogram.event | Update id=74964472 is handled. Duration 19 ms by bot id=8416403561
+2026-02-23 17:46:41 | WARNING  | middlewares.throttling | Throttle | user_id=8194599016 | juda tez xabar yubormoqda
+2026-02-23 17:46:41 | INFO     | aiogram.event | Update id=74964473 is handled. Duration 4 ms by bot id=8416403561
+2026-02-23 17:46:42 | INFO     | aiogram.event | Update id=74964469 is handled. Duration 433 ms by bot id=8416403561
+2026-02-23 17:46:59 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=🎬 Shorts
+2026-02-23 17:46:59 | ERROR    | services.media_service | Media error (video): Telegram server says - Bad Request: wrong file identifier/HTTP URL specified | Context: Shorts: naruto (ID: 1)
+2026-02-23 17:47:00 | INFO     | aiogram.event | Update id=74964474 is handled. Duration 692 ms by bot id=8416403561
+2026-02-23 17:47:06 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=/admin
+2026-02-23 17:47:06 | INFO     | aiogram.event | Update id=74964475 is handled. Duration 160 ms by bot id=8416403561
+2026-02-23 17:47:10 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=🔍 Anime qidirish
+2026-02-23 17:47:10 | INFO     | aiogram.event | Update id=74964476 is handled. Duration 194 ms by bot id=8416403561
+2026-02-23 17:47:12 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=🎲 Tasodifiy anime
+2026-02-23 17:47:12 | ERROR    | services.media_service | Media error (photo): Telegram server says - Bad Request: wrong file identifier/HTTP URL specified | Context: Search View: naruto (ID: 1)
+2026-02-23 17:47:12 | INFO     | aiogram.event | Update id=74964477 is handled. Duration 525 ms by bot id=8416403561
+2026-02-23 17:47:32 | INFO     | aiogram.dispatcher | Polling stopped
+2026-02-23 17:47:32 | INFO     | __main__ | Bot to'xtatilmoqda...
+2026-02-23 17:47:33 | INFO     | __main__ | Bot to'xtatildi.
+2026-02-23 17:47:33 | INFO     | aiogram.dispatcher | Polling stopped for bot @AniLunaDubbingBot id=8416403561 - 'Luna Dubing Bot'
+2026-02-23 17:47:33 | INFO     | __main__ | Bot foydalanuvchi tomonidan to'xtatildi.
+2026-02-23 17:50:08 | INFO     | __main__ | Polling boshlanmoqda...
+2026-02-23 17:50:08 | INFO     | __main__ | Ma'lumotlar bazasi yaratilmoqda...
+2026-02-23 17:50:08 | INFO     | __main__ | Ma'lumotlar bazasi tayyor.
+2026-02-23 17:50:08 | INFO     | __main__ | Bot ishga tushdi: @AnizzersOrg_Bot
+2026-02-23 17:50:08 | INFO     | aiogram.dispatcher | Start polling
+2026-02-23 17:50:08 | INFO     | aiogram.dispatcher | Run polling for bot @AnizzersOrg_Bot id=7415477442 - 'Bot'
+2026-02-23 17:50:08 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=/start
+2026-02-23 17:50:08 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=/start
+2026-02-23 17:50:08 | WARNING  | middlewares.throttling | Throttle | user_id=8194599016 | juda tez xabar yubormoqda
+2026-02-23 17:50:08 | INFO     | aiogram.event | Update id=857859447 is handled. Duration 1 ms by bot id=7415477442
+2026-02-23 17:50:08 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=/start
+2026-02-23 17:50:08 | WARNING  | middlewares.throttling | Throttle | user_id=8194599016 | juda tez xabar yubormoqda
+2026-02-23 17:50:08 | INFO     | aiogram.event | Update id=857859449 is handled. Duration 0 ms by bot id=7415477442
+2026-02-23 17:50:08 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=/start
+2026-02-23 17:50:08 | WARNING  | middlewares.throttling | Throttle | user_id=8194599016 | juda tez xabar yubormoqda
+2026-02-23 17:50:08 | INFO     | aiogram.event | Update id=857859450 is handled. Duration 0 ms by bot id=7415477442
+2026-02-23 17:50:08 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=/start
+2026-02-23 17:50:08 | WARNING  | middlewares.throttling | Throttle | user_id=8194599016 | juda tez xabar yubormoqda
+2026-02-23 17:50:08 | INFO     | aiogram.event | Update id=857859451 is handled. Duration 0 ms by bot id=7415477442
+2026-02-23 17:50:09 | INFO     | aiogram.event | Update id=857859446 is handled. Duration 541 ms by bot id=7415477442
+2026-02-23 17:50:14 | INFO     | middlewares.logging_middleware | Xabar | user_id=8194599016 | username=DEV_BR0 | text=🎬 Shorts
+2026-02-23 17:50:14 | INFO     | aiogram.event | Update id=857859452 is handled. Duration 157 ms by bot id=7415477442

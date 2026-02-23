@@ -100,11 +100,21 @@ class EpisodeModel:
         """Update one or more fields of an episode record."""
         if not kwargs:
             return
+            
+        # --- QAT'IY VALIDATSIYA ---
+        if "is_vip" in kwargs:
+            kwargs["is_vip"] = int(kwargs["is_vip"])
+        if "season_number" in kwargs:
+            kwargs["season_number"] = int(kwargs["season_number"])
+        if "episode_number" in kwargs:
+            kwargs["episode_number"] = int(kwargs["episode_number"])
+            
         set_clause = ", ".join(f"{k} = ?" for k in kwargs)
         values = list(kwargs.values()) + [episode_id]
         db = await Database.connect()
         await db.execute(f"UPDATE episodes SET {set_clause} WHERE id = ?", values)
         await db.commit()
+
 
     @staticmethod
     async def delete(episode_id: int) -> None:

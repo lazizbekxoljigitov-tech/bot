@@ -535,3 +535,52 @@ def admin_action_keyboard(admin_id: int) -> InlineKeyboardMarkup:
     
     builder.adjust(1)
     return builder.as_markup()
+# ==============================================================
+# ADMIN: SHORTS VA MEDIA FIX
+# ==============================================================
+
+def admin_fix_media_keyboard(context_info: str, media_type: str) -> InlineKeyboardMarkup:
+    """Admin alerti uchun 'To'g'rilash' tugmasi."""
+    builder = InlineKeyboardBuilder()
+    
+    # Context info dan ID ni qidirib ko'ramiz (masalan: "Shorts: naruto (ID: 1)")
+    import re
+    match = re.search(r"ID: (\d+)", context_info)
+    
+    if match:
+        obj_id = match.group(1)
+        if "Shorts" in context_info:
+            builder.button(text="🔧 Videoni yangilash", callback_data=f"fix_short:{obj_id}")
+        elif "Anime" in context_info:
+            builder.button(text="🖼 Posterni yangilash", callback_data=f"fix_anime_poster:{obj_id}")
+        elif "Episode" in context_info:
+            builder.button(text="🎞 Videoni yangilash", callback_data=f"fix_ep_video:{obj_id}")
+            
+    builder.button(text="🛠 Dashboard", callback_data="admin_dashboard")
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def shorts_manage_keyboard(shorts: list[dict]) -> InlineKeyboardMarkup:
+    """Shorts boshqarish ro'yxati."""
+    builder = InlineKeyboardBuilder()
+    for s in shorts:
+        builder.button(
+            text=f"🎬 {s['anime_title']} (ID: {s['id']})",
+            callback_data=f"manage_short:{s['id']}"
+        )
+    
+    builder.button(text="➕ Yangi Shorts", callback_data="add_short_direct")
+    builder.button(text="⬅️ Orqaga", callback_data="admin_dashboard")
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def short_action_keyboard(short_id: int) -> InlineKeyboardMarkup:
+    """Tanlangan short uchun amallar."""
+    builder = InlineKeyboardBuilder()
+    builder.button(text="📝 Videoni yangilash", callback_data=f"edit_short_video:{short_id}")
+    builder.button(text="❌ O'chirish", callback_data=f"delete_short_confirm:{short_id}")
+    builder.button(text="⬅️ Orqaga", callback_data="admin_manage_shorts")
+    builder.adjust(1)
+    return builder.as_markup()

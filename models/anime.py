@@ -73,11 +73,21 @@ class AnimeModel:
         """Update one or more fields of an anime record."""
         if not kwargs:
             return
+            
+        # --- QAT'IY VALIDATSIYA ---
+        if "is_vip" in kwargs:
+            kwargs["is_vip"] = int(kwargs["is_vip"])
+        if "season_count" in kwargs:
+            kwargs["season_count"] = int(kwargs["season_count"])
+        if "total_episodes" in kwargs:
+            kwargs["total_episodes"] = int(kwargs["total_episodes"])
+            
         set_clause = ", ".join(f"{k} = ?" for k in kwargs)
         values = list(kwargs.values()) + [anime_id]
         db = await Database.connect()
         await db.execute(f"UPDATE anime SET {set_clause} WHERE id = ?", values)
         await db.commit()
+
 
     @staticmethod
     async def delete(anime_id: int) -> None:
