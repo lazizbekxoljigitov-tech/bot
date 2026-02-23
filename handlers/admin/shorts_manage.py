@@ -16,14 +16,15 @@ from models.shorts import ShortsModel
 from models.admin import AdminModel
 from keyboards.reply import cancel_keyboard, admin_main_menu
 from keyboards.inline import anime_select_keyboard, shorts_manage_keyboard, short_action_keyboard
+from filters.admin import is_admin
+
 
 
 logger = logging.getLogger(__name__)
 router = Router(name="admin_shorts")
 
 
-async def is_admin(message: Message) -> bool:
-    return await AdminModel.is_admin(message.from_user.id)
+
 
 
 @router.message(F.text == "🎬 Shorts boshqarish", is_admin)

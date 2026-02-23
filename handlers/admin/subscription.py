@@ -4,19 +4,19 @@ handlers/admin/subscription.py - Majburiy obuna boshqarish handleri (admin).
 
 import logging
 from aiogram import Router, F
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from config import ADMIN_IDS
 from states.channel import AddChannelStates
-from models.channel import ChannelModel
+from filters.admin import is_admin
+from models.channels import ChannelModel
 from models.admin import AdminModel
 from keyboards.reply import cancel_keyboard, admin_main_menu
 
 logger = logging.getLogger(__name__)
 router = Router(name="admin_subscription")
 
-async def is_admin(message: Message) -> bool:
-    return await AdminModel.is_admin(message.from_user.id)
+
 
 @router.message(F.text == "🚫 Majburiy obuna", is_admin)
 async def subscription_menu(message: Message) -> None:

@@ -13,8 +13,9 @@ from config import ADMIN_IDS
 from states.anime import AddAnimeStates, EditAnimeStates
 from models.anime import AnimeModel
 from models.admin import AdminModel
-from keyboards.reply import cancel_keyboard, skip_keyboard, vip_choice_keyboard
-from keyboards.inline import anime_view_keyboard, anime_select_keyboard, admin_fix_media_keyboard, admin_main_menu
+from keyboards.reply import cancel_keyboard, skip_keyboard, vip_choice_keyboard, admin_main_menu
+from keyboards.inline import anime_view_keyboard, anime_select_keyboard, admin_fix_media_keyboard
+
 from filters.admin import is_admin
 
 logger = logging.getLogger(__name__)

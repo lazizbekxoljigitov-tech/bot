@@ -12,14 +12,14 @@ from states.vip import VipPlanStates
 from models.vip import VipModel
 from models.admin import AdminModel
 from services.vip_service import VipService
-from keyboards.reply import cancel_keyboard, admin_main_menu
+from keyboards.reply import cancel_keyboard, admin_main_menu, vip_choice_keyboard
+from filters.admin import is_admin
 from loader import bot
 
 logger = logging.getLogger(__name__)
 router = Router(name="admin_vip_manage")
 
-async def is_admin(message: Message) -> bool:
-    return await AdminModel.is_admin(message.from_user.id)
+
 
 @router.message(F.text == "💎 VIP boshqarish", is_admin)
 async def vip_manage_menu(message: Message, state: FSMContext) -> None:
