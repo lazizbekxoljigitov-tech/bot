@@ -92,8 +92,9 @@ async def start_set_setting(callback: CallbackQuery, state: FSMContext) -> None:
     else:
         prompt = "📝 <b>Qiymatni kiriting:</b>"
         
-    await callback.message.edit_text(prompt)
+    await callback.message.edit_text(prompt, reply_markup=cancel_keyboard())
     await callback.answer()
+
 
 @router.message(DashboardStates.waiting_setting_value)
 async def process_setting_value(message: Message, state: FSMContext) -> None:
@@ -146,7 +147,8 @@ async def add_admin_start(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(DashboardStates.waiting_admin_id)
     await callback.message.edit_text(
         "➕ <b>Yangi admin qo'shish</b>\n\n"
-        "Foydalanuvchi ID raqamini kiriting yoki uning xabarini bu yerga forward qiling:"
+        "Foydalanuvchi ID raqamini kiriting yoki uning xabarini bu yerga forward qiling:",
+        reply_markup=cancel_keyboard()
     )
     await callback.answer()
 
@@ -171,9 +173,10 @@ async def process_add_admin(message: Message, state: FSMContext) -> None:
     if success:
         await message.answer(f"✅ <b>{full_name}</b> ({tg_id}) admin etib tayinlandi!", reply_markup=admin_main_menu())
     else:
-        await message.answer("❌ Xatolik! Balki u allaqachon admindir.")
+        await message.answer("❌ Xatolik! Balki u allaqachon admindir.", reply_markup=admin_main_menu())
         
     await show_dashboard(message, state)
+
 
 # --- STATISTIKA ---
 
