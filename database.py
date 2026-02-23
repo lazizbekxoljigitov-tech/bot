@@ -151,3 +151,23 @@ class Database:
             CREATE INDEX IF NOT EXISTS idx_short_views_short ON short_views(short_id);
         """)
         await db.commit()
+        await cls.migrate_database()
+
+    @classmethod
+    async def migrate_database(cls) -> None:
+        """Apply schema migrations (e.g., adding missing columns)."""
+        db = await cls.connect()
+        
+        # Add poster_url to anime table if it doesn't exist
+        try:
+            # Check if column exists by trying to select it
+            await db.execute("SELECT poster_url FROM anime LIMIT 1")
+        except Exception:
+            # Column likely doesn't exist, add it
+            print("Migrating: Adding poster_url column to anime table...")
+            await db.execute("ALTER TABLE anime ADD COLUMN poster_url TEXT DEFAULT ''")
+            await db.commit()
+            print("Migration successful: poster_url added.")
+        
+        # You can add more migrations here as the schema evolves
+

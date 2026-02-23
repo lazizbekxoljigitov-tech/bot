@@ -146,3 +146,14 @@ class AnimeModel:
         cursor = await db.execute("SELECT COUNT(*) as cnt FROM anime")
         row = await cursor.fetchone()
         return row["cnt"] if row else 0
+
+    @staticmethod
+    async def get_random(limit: int = 1) -> list[dict]:
+        """Get random anime record(s)."""
+        db = await Database.connect()
+        cursor = await db.execute(
+            "SELECT * FROM anime ORDER BY RANDOM() LIMIT ?", (limit,)
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+

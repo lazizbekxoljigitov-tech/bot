@@ -132,29 +132,38 @@ async def add_episode_is_vip(message: Message, state: FSMContext) -> None:
         return
 
     data = await state.get_data()
-    await state.clear()
 
-    episode_id = await EpisodeModel.create(
-        anime_id=data["anime_id"],
-        season_number=data["season_number"],
-        episode_number=data["episode_number"],
-        title=data.get("title", ""),
-        video_file_id=data["video_file_id"],
-        is_vip=is_vip,
-    )
+    try:
+        episode_id = await EpisodeModel.create(
+            anime_id=data["anime_id"],
+            season_number=data["season_number"],
+            episode_number=data["episode_number"],
+            title=data.get("title", ""),
+            video_file_id=data["video_file_id"],
+            is_vip=is_vip,
+        )
+        await state.clear()
 
-    anime = await AnimeModel.get_by_id(data["anime_id"])
-    vip_text = "\u25C6 VIP" if is_vip else "\u25CB Oddiy"
+        anime = await AnimeModel.get_by_id(data["anime_id"])
+        vip_text = "◆ VIP" if is_vip else "○ Oddiy"
 
-    await message.answer(
-        f"\u2714 <b>Qism muvaffaqiyatli qo'shildi!</b>\n\n"
-        f"\u25B8 Anime: {anime['title'] if anime else '---'}\n"
-        f"\u25B8 Sezon: {data['season_number']}\n"
-        f"\u25B8 Qism: {data['episode_number']}\n"
-        f"\u25B8 Holat: {vip_text}\n"
-        f"\u25B8 ID: {episode_id}",
-        reply_markup=admin_main_menu(),
-    )
+        await message.answer(
+            f"✔ <b>Qism muvaffaqiyatli qo'shildi!</b>\n\n"
+            f"▸ Anime: {anime['title'] if anime else '---'}\n"
+            f"▸ Sezon: {data['season_number']}\n"
+            f"▸ Qism: {data['episode_number']}\n"
+            f"▸ Holat: {vip_text}\n"
+            f"▸ ID: {episode_id}",
+            reply_markup=admin_main_menu(),
+        )
+    except Exception as e:
+        logger.error(f"Qism qo'shishda xatolik: {e}")
+        await message.answer(
+            f"✖ <b>Xatolik yuz berdi!</b>\n"
+            f"Qismni ma'lumotlar bazasiga saqlashda muammo yuzaga keldi.\n\n"
+            f"Xato: <code>{str(e)}</code>",
+            reply_markup=admin_main_menu()
+        )
 
 
 # ==============================================================

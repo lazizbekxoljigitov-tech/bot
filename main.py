@@ -46,8 +46,7 @@ def register_routers() -> None:
     from handlers.admin.stats import router as stats_router
     from handlers.admin.subscription import router as subscription_router
     from handlers.admin.dashboard import router as dashboard_router
-    from handlers.admin.broadcast import router as broadcast_router
-    from handlers.channels.channel_post import router as channel_post_router
+    from handlers.admin.tools import router as admin_tools_router
     from handlers.vip.plans import router as vip_plans_router
 
     dp.include_routers(
@@ -61,6 +60,7 @@ def register_routers() -> None:
         episodes_router,
         anime_crud_router,
         episode_crud_router,
+        admin_tools_router,
         vip_manage_router,
         shorts_manage_router,
         stats_router,

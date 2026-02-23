@@ -54,3 +54,10 @@ class SearchService:
         start = page * SEARCH_RESULTS_PER_PAGE
         end = start + SEARCH_RESULTS_PER_PAGE
         return items[start:end], total_pages
+
+    @staticmethod
+    async def get_random_anime() -> dict | None:
+        """Tasodifiy anime olish."""
+        results = await AnimeModel.get_random(limit=1)
+        return results[0] if results else None
+

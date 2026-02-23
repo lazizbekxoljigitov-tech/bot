@@ -37,11 +37,20 @@ async def show_shorts_start(message: Message) -> None:
         f"👁 <b>Ko'rilgan:</b> {updated_short['views']}\n"
     )
     
-    await message.answer_video(
-        video=first_short["short_video_file_id"],
-        caption=text,
-        reply_markup=shorts_keyboard(first_short["id"], first_short["anime_id"], 0, total),
-    )
+    try:
+        await message.answer_video(
+            video=first_short["short_video_file_id"],
+            caption=text,
+            reply_markup=shorts_keyboard(first_short["id"], first_short["anime_id"], 0, total),
+        )
+    except Exception as e:
+        logger.error(f"Shorts yuborishda xatolik: {e}")
+        await message.answer(
+            f"🎬 <b>Shorts yuklashda xatolik yuz berdi.</b>\n"
+            f"Video fayl o'chirilgan yoki yaroqsiz bo'lishi mumkin.\n\n"
+            f"ID: <code>{first_short['id']}</code>",
+            reply_markup=shorts_keyboard(first_short["id"], first_short["anime_id"], 0, total),
+        )
 
 
 @router.callback_query(F.data.startswith("short_nav:"))
@@ -72,10 +81,18 @@ async def navigate_shorts(callback: CallbackQuery) -> None:
     )
     
     # Video o'zgargani uchun yangi xabar yuborish yaxshiroq (edit_media ba'zan sekin/xatoli)
-    await callback.message.delete()
-    await callback.message.answer_video(
-        video=current["short_video_file_id"],
-        caption=text,
-        reply_markup=shorts_keyboard(current["id"], current["anime_id"], index, total),
-    )
+    try:
+        await callback.message.delete()
+        await callback.message.answer_video(
+            video=current["short_video_file_id"],
+            caption=text,
+            reply_markup=shorts_keyboard(current["id"], current["anime_id"], index, total),
+        )
+    except Exception as e:
+        logger.error(f"Shorts navigatsiyasida xatolik: {e}")
+        await callback.message.answer(
+            f"❌ <b>Videoni yuklab bo'lmadi.</b>\n"
+            f"Fayl topilmadi yoki o'chirilgan.",
+            reply_markup=shorts_keyboard(current["id"], current["anime_id"], index, total),
+        )
     await callback.answer()

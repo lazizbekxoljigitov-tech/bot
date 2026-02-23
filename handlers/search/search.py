@@ -121,6 +121,18 @@ async def search_vip(message: Message) -> None:
     await _show_search_results(message, results, 0, total_pages, "vip", "all")
 
 
+
+@router.message(F.text == "🎲 Tasodifiy anime")
+async def search_random(message: Message) -> None:
+    """Tasodifiy anime ko'rsatish."""
+    anime = await SearchService.get_random_anime()
+    if not anime:
+        await message.answer("ℹ️ Hozircha animelar yo'q.")
+        return
+    await _show_anime_view(message, anime["id"])
+
+
+
 @router.message(F.text == "⬅️ Orqaga")
 async def back_to_main(message: Message, state: FSMContext) -> None:
     await state.clear()

@@ -185,31 +185,40 @@ async def add_anime_is_vip(message: Message, state: FSMContext) -> None:
         return
 
     data = await state.get_data()
-    await state.clear()
 
-    anime_id = await AnimeModel.create(
-        title=data["title"],
-        code=data["code"],
-        description=data.get("description", ""),
-        genre=data.get("genre", ""),
-        season_count=data.get("season_count", 1),
-        total_episodes=data.get("total_episodes", 0),
-        poster_file_id=data.get("poster_file_id", ""),
-        poster_url=data.get("poster_url", ""),
-        is_vip=is_vip,
-    )
-
-    vip_text = "\u25C6 VIP" if is_vip else "\u25CB Oddiy"
-    await message.answer(
-        f"\u2714 <b>Anime muvaffaqiyatli qo'shildi!</b>\n\n"
-        f"\u25B8 Nom: {data['title']}\n"
-        f"\u25B8 Kod: {data['code']}\n"
-        f"\u25B8 Janr: {data.get('genre', '---')}\n"
-        f"\u25B8 Sezonlar: {data.get('season_count', 1)}\n"
-        f"\u25B8 Holat: {vip_text}\n"
-        f"\u25B8 ID: {anime_id}",
-        reply_markup=admin_main_menu(),
-    )
+    try:
+        anime_id = await AnimeModel.create(
+            title=data["title"],
+            code=data["code"],
+            description=data.get("description", ""),
+            genre=data.get("genre", ""),
+            season_count=data.get("season_count", 1),
+            total_episodes=data.get("total_episodes", 0),
+            poster_file_id=data.get("poster_file_id", ""),
+            poster_url=data.get("poster_url", ""),
+            is_vip=is_vip,
+        )
+        await state.clear()
+        
+        vip_text = "◆ VIP" if is_vip else "○ Oddiy"
+        await message.answer(
+            f"✔ <b>Anime muvaffaqiyatli qo'shildi!</b>\n\n"
+            f"▸ Nom: {data['title']}\n"
+            f"▸ Kod: {data['code']}\n"
+            f"▸ Janr: {data.get('genre', '---')}\n"
+            f"▸ Sezonlar: {data.get('season_count', 1)}\n"
+            f"▸ Holat: {vip_text}\n"
+            f"▸ ID: {anime_id}",
+            reply_markup=admin_main_menu(),
+        )
+    except Exception as e:
+        logger.error(f"Anime qo'shishda xatolik: {e}")
+        await message.answer(
+            f"✖ <b>Xatolik yuz berdi!</b>\n"
+            f"Ma'lumotlar bazasiga saqlashda muammo bo'ldi.\n\n"
+            f"Xato xabari: <code>{str(e)}</code>",
+            reply_markup=admin_main_menu()
+        )
 
 
 # ==============================================================

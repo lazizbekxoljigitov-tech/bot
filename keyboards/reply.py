@@ -135,10 +135,14 @@ def search_menu() -> ReplyKeyboardMarkup:
                 KeyboardButton(text="🌟 Top animelar"),
                 KeyboardButton(text="🆕 Yangi animelar"),
             ],
-            [KeyboardButton(text="⬅️ Orqaga")],
+            [
+                KeyboardButton(text="🎲 Tasodifiy anime"),
+                KeyboardButton(text="⬅️ Orqaga"),
+            ],
         ],
         resize_keyboard=True,
     )
+
 
 
 def channel_post_menu() -> ReplyKeyboardMarkup:

@@ -25,11 +25,11 @@ ADMIN_IDS: list[int] = [
 ]
 
 # ---- Database path ----
-DB_PATH: str = str(BASE_DIR / "data" / "bot.db")
+DB_PATH: str = str((BASE_DIR / "data" / "bot.db").absolute())
 
 # ---- Logging ----
-LOG_DIR: str = str(BASE_DIR / "logs")
-LOG_FILE: str = str(Path(LOG_DIR) / "bot.log")
+LOG_DIR: str = str((BASE_DIR / "logs").absolute())
+LOG_FILE: str = str((Path(LOG_DIR) / "bot.log").absolute())
 
 # ---- Pagination ----
 EPISODES_PER_PAGE: int = 5
