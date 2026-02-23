@@ -9,7 +9,8 @@ from aiogram.fsm.context import FSMContext
 from config import ADMIN_IDS
 from states.channel import AddChannelStates
 from filters.admin import is_admin
-from models.channels import ChannelModel
+from models.channel import ChannelModel
+
 from models.admin import AdminModel
 from keyboards.reply import cancel_keyboard, admin_main_menu
 
