@@ -19,16 +19,28 @@ class EpisodeModel:
         is_vip: int = 0,
     ) -> int:
         """Insert a new episode record and return its ID."""
+        # --- QAT'IY VALIDATSIYA (Strong Data) ---
+        if not anime_id or not video_file_id:
+            raise ValueError("Anime ID va Video File ID bo'sh bo'lishi mumkin emas!")
+        
         db = await Database.connect()
         cursor = await db.execute(
             """
             INSERT INTO episodes (anime_id, season_number, episode_number, title, video_file_id, is_vip)
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (anime_id, season_number, episode_number, title, video_file_id, is_vip),
+            (
+                int(anime_id), 
+                int(season_number), 
+                int(episode_number), 
+                str(title).strip(), 
+                str(video_file_id).strip(), 
+                int(is_vip)
+            ),
         )
         await db.commit()
         return cursor.lastrowid
+
 
     @staticmethod
     async def get_by_id(episode_id: int) -> dict | None:

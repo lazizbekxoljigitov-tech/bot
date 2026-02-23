@@ -18,6 +18,8 @@ from services.user_service import UserService
 from utils.images import IMAGES
 from keyboards.inline import seasons_keyboard, episodes_keyboard, episode_view_keyboard, vip_plans_keyboard
 from config import EPISODES_PER_PAGE
+from services.media_service import MediaService
+
 
 logger = logging.getLogger(__name__)
 router = Router(name="episodes_view")
@@ -174,22 +176,18 @@ async def watch_episode(callback: CallbackQuery, state: FSMContext) -> None:
     # Qism ma'lumotlarini formatlash
     text = await AnimeService.format_episode_text(episode, anime["title"])
 
-    # Video yuborish
     try:
         # Eski xabarni (posterni) o'chirish - UI yanada toza bo'lishi uchun
         await callback.message.delete()
         
-        await callback.message.answer_video(
+        await MediaService.send_video(
+            event=callback,
             video=episode["video_file_id"],
             caption=text,
             reply_markup=episode_view_keyboard(anime["id"], episode_id),
+            context_info=f"Episode: {anime['title']} S{episode['season_number']}E{episode['episode_number']} (ID: {episode_id})"
         )
-    except Exception as e:
-        logger.error("Video yuborishda xato: %s", str(e))
-        await callback.message.answer(
-            f"❌ <b>Videoni yuborib bo'lmadi.</b>\n"
-            f"Telegram serverida fayl topilmadi yoki token o'zgargan.\n\n"
-            f"<b>Fayl ID:</b> <code>{episode['video_file_id']}</code>"
-        )
-        await callback.answer("Video yuborishda xatolik!")
+    except Exception:
+        await callback.message.answer("❌ <b>Videoni yuborib bo'lmadi. Adminlar ogohlantirildi.</b>")
     await callback.answer()
+

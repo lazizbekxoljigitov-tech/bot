@@ -144,12 +144,19 @@ class Database:
 
             CREATE INDEX IF NOT EXISTS idx_anime_code ON anime(code);
             CREATE INDEX IF NOT EXISTS idx_anime_genre ON anime(genre);
+            CREATE INDEX IF NOT EXISTS idx_anime_views ON anime(views DESC);
+            CREATE INDEX IF NOT EXISTS idx_anime_created ON anime(created_at DESC);
             CREATE INDEX IF NOT EXISTS idx_episodes_anime ON episodes(anime_id);
+            CREATE INDEX IF NOT EXISTS idx_episodes_views ON episodes(views DESC);
             CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
             CREATE INDEX IF NOT EXISTS idx_comments_anime ON comments(anime_id);
             CREATE INDEX IF NOT EXISTS idx_shorts_anime ON shorts(anime_id);
+            CREATE INDEX IF NOT EXISTS idx_shorts_views ON shorts(views DESC);
             CREATE INDEX IF NOT EXISTS idx_short_views_short ON short_views(short_id);
+            CREATE INDEX IF NOT EXISTS idx_users_joined ON users(joined_date DESC);
         """)
+
+
         await db.commit()
         await cls.migrate_database()
 

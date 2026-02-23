@@ -19,8 +19,9 @@ from keyboards.inline import (
     search_results_keyboard,
     anime_view_keyboard,
 )
-from services.search_service import SearchService
 from services.anime_service import AnimeService
+from services.search_service import SearchService
+from services.media_service import MediaService
 from utils.images import IMAGES
 from config import SEARCH_RESULTS_PER_PAGE, SEARCH_RESULTS_PER_PAGE
 
@@ -211,14 +212,16 @@ async def _show_anime_view(message: Message, anime_id: int) -> None:
     
     if poster:
         try:
-            await message.answer_photo(
+            await MediaService.send_photo(
+                event=message,
                 photo=poster,
                 caption=text,
                 reply_markup=anime_view_keyboard(anime_id, is_fav),
+                context_info=f"Search View: {anime['title']} (ID: {anime_id})"
             )
-        except Exception as e:
-            logger.error(f"Poster yuborishda xato (search view {anime_id}): {e}")
-            await message.answer(text, reply_markup=anime_view_keyboard(anime_id, is_fav))
+        except Exception:
+            await message.answer("❌ <b>Poster yuklashda xatolik yuz berdi. Adminlar ogohlantirildi.</b>")
+
     else:
         await message.answer(text, reply_markup=anime_view_keyboard(anime_id, is_fav))
 

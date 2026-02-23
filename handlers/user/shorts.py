@@ -9,6 +9,8 @@ from aiogram.types import Message, CallbackQuery
 from models.shorts import ShortsModel
 from models.user import UserModel
 from keyboards.inline import shorts_keyboard
+from services.media_service import MediaService
+
 
 logger = logging.getLogger(__name__)
 router = Router(name="user_shorts")
@@ -41,19 +43,16 @@ async def show_shorts_start(message: Message) -> None:
     )
     
     try:
-        await message.answer_video(
+        await MediaService.send_video(
+            event=message,
             video=first_short["short_video_file_id"],
             caption=text,
             reply_markup=shorts_keyboard(first_short["id"], first_short["anime_id"], 0, total),
+            context_info=f"Shorts: {first_short['anime_title']} (ID: {first_short['id']})"
         )
-    except Exception as e:
-        logger.error(f"Shorts yuborishda xatolik: {e}")
-        await message.answer(
-            f"🎬 <b>Shorts yuklashda xatolik yuz berdi.</b>\n"
-            f"Sizda bot tokeni o'zgargan yoki fayl ID'si Telegram tomonidan o'chirilgan bo'lishi mumkin.\n\n"
-            f"<b>Fayl ID:</b> <code>{first_short['short_video_file_id']}</code>",
-            reply_markup=shorts_keyboard(first_short["id"], first_short["anime_id"], 0, total),
-        )
+    except Exception:
+        await message.answer("🎬 <b>Kechirasiz, videoni yuklashda texnik muammo yuz berdi. Adminlar ogohlantirildi.</b>")
+
 
 
 @router.callback_query(F.data.startswith("short_nav:"))
@@ -86,16 +85,14 @@ async def navigate_shorts(callback: CallbackQuery) -> None:
     # Video o'zgargani uchun yangi xabar yuborish yaxshiroq (edit_media ba'zan sekin/xatoli)
     try:
         await callback.message.delete()
-        await callback.message.answer_video(
+        await MediaService.send_video(
+            event=callback,
             video=current["short_video_file_id"],
             caption=text,
             reply_markup=shorts_keyboard(current["id"], current["anime_id"], index, total),
+            context_info=f"Shorts Nav: {current['anime_title']} (ID: {current['id']})"
         )
-    except Exception as e:
-        logger.error(f"Shorts navigatsiyasida xatolik: {e}")
-        await callback.message.answer(
-            f"❌ <b>Videoni yuklab bo'lmadi.</b>\n"
-            f"Fayl topilmadi yoki o'chirilgan.",
-            reply_markup=shorts_keyboard(current["id"], current["anime_id"], index, total),
-        )
+    except Exception:
+        await callback.message.answer("❌ <b>Videoni yuklab bo'lmadi. Adminlar ogohlantirildi.</b>")
+
     await callback.answer()

@@ -12,10 +12,14 @@ class ShortsModel:
     @staticmethod
     async def create(anime_id: int, short_video_file_id: str) -> int:
         """Create a new short clip entry and return its ID."""
+        # --- QAT'IY VALIDATSIYA (Strong Data) ---
+        if not anime_id or not short_video_file_id:
+            raise ValueError("Anime ID va Video File ID bo'sh bo'lishi mumkin emas!")
+
         db = await Database.connect()
         cursor = await db.execute(
             "INSERT INTO shorts (anime_id, short_video_file_id) VALUES (?, ?)",
-            (anime_id, short_video_file_id),
+            (int(anime_id), str(short_video_file_id).strip()),
         )
         await db.commit()
         return cursor.lastrowid

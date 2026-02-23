@@ -263,14 +263,22 @@ async def edit_episode_save(message: Message, state: FSMContext) -> None:
             return
 
     await state.clear()
-    await EpisodeModel.update(data["edit_episode_id"], **{field: value})
+    try:
+        await EpisodeModel.update(data["edit_episode_id"], **{field: value})
+        await message.answer(
+            f"✔ <b>Qism yangilandi!</b>\n\n"
+            f"▸ Maydon: {field}\n"
+            f"▸ Yangi qiymat: {value}",
+            reply_markup=admin_main_menu(),
+        )
+    except Exception as e:
+        logger.error(f"Episode update error: {e}")
+        await message.answer(
+            f"✖ <b>Yangilashda xatolik!</b>\n"
+            f"Xato: <code>{str(e)}</code>",
+            reply_markup=admin_main_menu()
+        )
 
-    await message.answer(
-        f"\u2714 <b>Qism yangilandi!</b>\n\n"
-        f"\u25B8 Maydon: {field}\n"
-        f"\u25B8 Yangi qiymat: {value}",
-        reply_markup=admin_main_menu(),
-    )
 
 
 # ==============================================================
@@ -335,8 +343,13 @@ async def delete_episode_confirmed(callback: CallbackQuery) -> None:
         await callback.answer("Qism topilmadi.")
         return
 
-    await EpisodeModel.delete(episode_id)
-    await callback.message.edit_text(
-        f"\u2714 S{episode['season_number']}E{episode['episode_number']} o'chirildi!"
-    )
+    try:
+        await EpisodeModel.delete(episode_id)
+        await callback.message.edit_text(
+            f"✅ S{episode['season_number']}E{episode['episode_number']} o'chirildi!"
+        )
+    except Exception as e:
+        logger.error(f"Episode delete error: {e}")
+        await callback.message.answer(f"✖ <b>O'chirishda xatolik:</b> {e}")
+
     await callback.answer()

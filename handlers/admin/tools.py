@@ -32,14 +32,17 @@ async def check_database(message: Message):
     """DB holatini tekshirish."""
     try:
         db = await Database.connect()
-        cursor = await db.execute("SELECT 1")
-        await cursor.fetchone()
+        # Integrity check
+        cursor = await db.execute("PRAGMA integrity_check")
+        row = await cursor.fetchone()
+        integrity = row[0] if row else "Unknown"
         
         db_size = os.path.getsize(DB_PATH) / 1024 # KB
         
         await message.answer(
             "✅ <b>Ma'lumotlar bazasi:</b>\n\n"
             f"▸ Holat: Ishlamoqda\n"
+            f"▸ Integrity: <code>{integrity}</code>\n"
             f"▸ Fayl: <code>{DB_PATH}</code>\n"
             f"▸ Hajm: {db_size:.2f} KB"
         )

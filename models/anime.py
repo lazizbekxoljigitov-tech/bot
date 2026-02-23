@@ -22,6 +22,13 @@ class AnimeModel:
         is_vip: int = 0,
     ) -> int:
         """Insert a new anime record and return its ID."""
+        # --- QAT'IY VALIDATSIYA (Strong Data) ---
+        if not title or not code:
+            raise ValueError("Title va Code bo'sh bo'lishi mumkin emas!")
+        
+        if not poster_file_id and not poster_url:
+            raise ValueError("Anime uchun poster (file_id yoki URL) talab qilinadi!")
+
         db = await Database.connect()
         cursor = await db.execute(
             """
@@ -29,10 +36,21 @@ class AnimeModel:
                                total_episodes, poster_file_id, poster_url, is_vip)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (title, code, description, genre, season_count, total_episodes, poster_file_id, poster_url, is_vip),
+            (
+                str(title).strip(), 
+                str(code).strip().lower(), 
+                str(description).strip(), 
+                str(genre).strip(), 
+                int(season_count), 
+                int(total_episodes), 
+                str(poster_file_id).strip(), 
+                str(poster_url).strip(), 
+                int(is_vip)
+            ),
         )
         await db.commit()
         return cursor.lastrowid
+
 
     @staticmethod
     async def get_by_id(anime_id: int) -> dict | None:

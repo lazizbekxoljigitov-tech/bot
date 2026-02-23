@@ -17,6 +17,8 @@ from models.admin import AdminModel
 from keyboards.reply import user_main_menu, admin_main_menu
 from keyboards.inline import anime_view_keyboard
 from services.anime_service import AnimeService
+from services.media_service import MediaService
+
 from services.user_service import UserService
 from utils.images import IMAGES
 from config import ADMIN_IDS
@@ -66,16 +68,19 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
                     
                     if poster:
                         try:
-                            await message.answer_photo(
+                            await MediaService.send_photo(
+                                event=message,
                                 photo=poster,
                                 caption=text,
                                 reply_markup=anime_view_keyboard(anime_id, is_fav),
+                                context_info=f"Start DeepLink Anime: {anime['title']} (ID: {anime_id})"
                             )
-                        except Exception as e:
-                            logger.error(f"Poster yuborishda xato (anime_{anime_id}): {e}")
-                            await message.answer(
-                                text, reply_markup=anime_view_keyboard(anime_id, is_fav)
-                            )
+                        except Exception:
+                            # If media fails, we still don't want to show text-only if possible, 
+                            # but for deep links, we might have to if the video is the only other way.
+                            # However, user said no text-only. So we just show error and admin will fix.
+                            await message.answer("❌ <b>Poster yuklashda xatolik yuz berdi. Adminlar ogohlantirildi.</b>")
+
                     else:
                         await message.answer(
                             text, reply_markup=anime_view_keyboard(anime_id, is_fav)
@@ -111,17 +116,16 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
     )
     
     try:
-        await message.answer_photo(
+        await MediaService.send_photo(
+            event=message,
             photo=IMAGES["WELCOME"],
             caption=welcome_text,
             reply_markup=user_main_menu(),
+            context_info="Welcome Photo"
         )
-    except Exception as e:
-        logger.error(f"Xush kelibsiz rasmini (WELCOME) yuborishda xato: {e}")
-        await message.answer(
-            welcome_text,
-            reply_markup=user_main_menu(),
-        )
+    except Exception:
+        await message.answer("👋 <b>Xush kelibsiz! Botdan foydalanish uchun quyidagi menyudan foydalaning.</b>")
+
 
 
 @router.message(Command("admin"))
@@ -159,16 +163,7 @@ async def go_back(message: Message, state: FSMContext) -> None:
     )
 
 
-@router.message(F.text == "❌ Bekor qilish")
-async def cancel_action(message: Message, state: FSMContext) -> None:
-    """Amalni bekor qilish."""
-    await state.clear()
-    is_admin = await AdminModel.is_admin(message.from_user.id)
-    kb = admin_main_menu() if is_admin else user_main_menu()
-    await message.answer(
-        "❌ <b>Amal bekor qilindi.</b>",
-        reply_markup=kb,
-    )
+
 
 
 @router.message(F.text == "⬅️ Foydalanuvchi paneli")

@@ -39,29 +39,34 @@ async def broadcast_start(event: Message | CallbackQuery, state: FSMContext) -> 
     
     kb = cancel_keyboard()
     
+    from services.media_service import MediaService
     try:
         if isinstance(event, Message):
-            await event.answer_photo(
+            await MediaService.send_photo(
+                event=event,
                 photo=IMAGES["BROADCAST"],
                 caption=caption,
-                reply_markup=kb
+                reply_markup=kb,
+                context_info="Broadcast Start"
             )
         else:
-            await event.message.answer_photo(
+            await MediaService.send_photo(
+                event=event.message,
                 photo=IMAGES["BROADCAST"],
                 caption=caption,
-                reply_markup=kb
+                reply_markup=kb,
+                context_info="Broadcast Start (Callback)"
             )
             await event.message.delete()
             await event.answer()
-    except Exception as e:
-        logger.error(f"Error sending broadcast start photo: {e}")
+    except Exception:
         if isinstance(event, Message):
             await event.answer(caption, reply_markup=kb)
         else:
             await event.message.answer(caption, reply_markup=kb)
             await event.message.delete()
             await event.answer()
+
 
 @router.message(BroadcastStates.waiting_message, is_admin)
 async def broadcast_preview(message: Message, state: FSMContext) -> None:

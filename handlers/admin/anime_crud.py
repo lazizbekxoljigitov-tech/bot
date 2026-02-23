@@ -305,14 +305,22 @@ async def edit_anime_new_value(message: Message, state: FSMContext) -> None:
             return
 
     await state.clear()
-    await AnimeModel.update(anime_id, **{field: value})
+    try:
+        await AnimeModel.update(anime_id, **{field: value})
+        await message.answer(
+            f"✔ <b>Anime yangilandi!</b>\n\n"
+            f"▸ Maydon: {field}\n"
+            f"▸ Yangi qiymat: {value}",
+            reply_markup=admin_main_menu(),
+        )
+    except Exception as e:
+        logger.error(f"Anime update error: {e}")
+        await message.answer(
+            f"✖ <b>Yangilashda xatolik!</b>\n"
+            f"Xato: <code>{str(e)}</code>",
+            reply_markup=admin_main_menu()
+        )
 
-    await message.answer(
-        f"\u2714 <b>Anime yangilandi!</b>\n\n"
-        f"\u25B8 Maydon: {field}\n"
-        f"\u25B8 Yangi qiymat: {value}",
-        reply_markup=admin_main_menu(),
-    )
 
 
 # ==============================================================
@@ -346,8 +354,13 @@ async def delete_anime_confirmed(callback: CallbackQuery) -> None:
         await callback.answer("Anime topilmadi.")
         return
 
-    await AnimeModel.delete(anime_id)
-    await callback.message.edit_text(
-        f"\u2714 <b>\"{anime['title']}\"</b> muvaffaqiyatli o'chirildi!"
-    )
+    try:
+        await AnimeModel.delete(anime_id)
+        await callback.message.edit_text(
+            f"✅ <b>\"{anime['title']}\"</b> muvaffaqiyatli o'chirildi!"
+        )
+    except Exception as e:
+        logger.error(f"Anime delete error: {e}")
+        await callback.message.answer(f"✖ <b>O'chirishda xatolik:</b> {e}")
+
     await callback.answer()

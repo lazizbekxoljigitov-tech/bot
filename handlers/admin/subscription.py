@@ -41,18 +41,18 @@ async def add_channel_id(message: Message, state: FSMContext) -> None:
     await state.set_state(AddChannelStates.channel_link)
     await message.answer("Kanal havolasini kiriting:")
 
-@router.message(AddChannelStates.channel_link, is_admin)
-async def add_channel_link(message: Message, state: FSMContext) -> None:
-    data = await state.get_data()
-    await state.clear()
-    await ChannelModel.add(data["channel_id"], message.text.strip())
-    await message.answer(f"\u2714 Kanal qo'shildi!", reply_markup=admin_main_menu())
+    try:
+        await ChannelModel.add(data["channel_id"], message.text.strip())
+        await message.answer(f"✔ <b>Kanal qo'shildi!</b>", reply_markup=admin_main_menu())
+    except Exception as e:
+        logger.error(f"Add channel error: {e}")
+        await message.answer(f"✖ <b>Xatolik:</b> {e}", reply_markup=admin_main_menu())
 
-@router.message(F.text.startswith("/remove_channel"), is_admin)
-async def remove_channel(message: Message) -> None:
-    parts = message.text.split()
-    if len(parts) < 2:
-        await message.answer("/remove_channel [channel_id]")
-        return
-    await ChannelModel.remove(parts[1])
-    await message.answer(f"\u2714 Kanal o'chirildi!")
+
+    try:
+        await ChannelModel.remove(parts[1])
+        await message.answer(f"✔ <b>Kanal o'chirildi!</b>")
+    except Exception as e:
+        logger.error(f"Remove channel error: {e}")
+        await message.answer(f"✖ <b>Xatolik:</b> {e}")
+

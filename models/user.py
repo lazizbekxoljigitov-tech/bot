@@ -12,6 +12,10 @@ class UserModel:
     @staticmethod
     async def create_or_update(telegram_id: int, full_name: str, username: str) -> dict | None:
         """Register a new user or update existing user info. Returns the user row."""
+        # --- QAT'IY VALIDATSIYA (Strong Data) ---
+        if not telegram_id:
+            raise ValueError("Telegram ID bo'sh bo'lishi mumkin emas!")
+            
         db = await Database.connect()
         await db.execute(
             """
@@ -21,7 +25,7 @@ class UserModel:
                 full_name = excluded.full_name,
                 username = excluded.username
             """,
-            (telegram_id, full_name, username),
+            (int(telegram_id), str(full_name).strip(), str(username or "").strip()),
         )
         await db.commit()
         return await UserModel.get_by_telegram_id(telegram_id)

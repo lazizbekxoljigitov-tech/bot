@@ -60,17 +60,23 @@ async def add_short_video(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     await state.clear()
 
-    file_id = message.video.file_id
-    short_id = await ShortsModel.create(data["anime_id"], file_id)
+    try:
+        short_id = await ShortsModel.create(data["anime_id"], file_id)
+        anime = await AnimeModel.get_by_id(data["anime_id"])
+        await message.answer(
+            f"✔ <b>Short qo'shildi!</b>\n\n"
+            f"▸ Anime: {anime['title'] if anime else '---'}\n"
+            f"▸ ID: {short_id}",
+            reply_markup=admin_main_menu(),
+        )
+    except Exception as e:
+        logger.error(f"Short create error: {e}")
+        await message.answer(
+            f"✖ <b>Qo'shishda xatolik!</b>\n"
+            f"Xato: <code>{str(e)}</code>",
+            reply_markup=admin_main_menu()
+        )
 
-    anime = await AnimeModel.get_by_id(data["anime_id"])
-
-    await message.answer(
-        f"\u2714 <b>Short qo'shildi!</b>\n\n"
-        f"\u25B8 Anime: {anime['title'] if anime else '---'}\n"
-        f"\u25B8 ID: {short_id}",
-        reply_markup=admin_main_menu(),
-    )
 
 
 @router.message(AddShortsStates.video, is_admin)

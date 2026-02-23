@@ -95,22 +95,26 @@ async def create_plan_card(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
     await state.clear()
 
-    plan_id = await VipModel.create_plan(
-        name=data["name"],
-        price=data["price"],
-        duration_days=data["duration_days"],
-        card_number=card,
-    )
+    try:
+        plan_id = await VipModel.create_plan(
+            name=data["name"],
+            price=data["price"],
+            duration_days=data["duration_days"],
+            card_number=card,
+        )
+        await message.answer(
+            f"✔ <b>VIP plan yaratildi!</b>\n\n"
+            f"▸ Nom: {data['name']}\n"
+            f"▸ Narx: {data['price']} so'm\n"
+            f"▸ Muddat: {data['duration_days']} kun\n"
+            f"▸ Karta: {card}\n"
+            f"▸ ID: {plan_id}",
+            reply_markup=admin_main_menu(),
+        )
+    except Exception as e:
+        logger.error(f"Create VIP plan error: {e}")
+        await message.answer(f"✖ <b>Xatolik:</b> {e}", reply_markup=admin_main_menu())
 
-    await message.answer(
-        f"\u2714 <b>VIP plan yaratildi!</b>\n\n"
-        f"\u25B8 Nom: {data['name']}\n"
-        f"\u25B8 Narx: {data['price']} so'm\n"
-        f"\u25B8 Muddat: {data['duration_days']} kun\n"
-        f"\u25B8 Karta: {card}\n"
-        f"\u25B8 ID: {plan_id}",
-        reply_markup=admin_main_menu(),
-    )
 
 @router.message(F.text.startswith("/delete_plan"), is_admin)
 async def delete_plan(message: Message) -> None:
@@ -127,8 +131,13 @@ async def delete_plan(message: Message) -> None:
     if not plan:
         await message.answer("\u2716 Plan topilmadi.")
         return
-    await VipModel.delete_plan(plan_id)
-    await message.answer(f"\u2714 <b>\"{plan['name']}\"</b> plani o'chirildi!")
+    try:
+        await VipModel.delete_plan(plan_id)
+        await message.answer(f"✔ <b>\"{plan['name']}\"</b> plani o'chirildi!")
+    except Exception as e:
+        logger.error(f"Delete VIP plan error: {e}")
+        await message.answer(f"✖ <b>O'chirishda xatolik:</b> {e}")
+
 
 # ==============================================================
 # VIP TO'LOVNI TASDIQLASH / RAD ETISH (CALLBACK)

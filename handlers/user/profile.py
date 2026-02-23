@@ -2,7 +2,9 @@ import logging
 from aiogram import Router, F
 from aiogram.types import Message
 from services.user_service import UserService
+from services.media_service import MediaService
 from utils.images import IMAGES
+
 
 logger = logging.getLogger(__name__)
 router = Router(name="user_profile")
@@ -18,10 +20,12 @@ async def show_profile(message: Message) -> None:
     # Profil matnini olish (emoji va formatlash service ichida)
     text = await UserService.get_profile_text(message.from_user.id)
     try:
-        await message.answer_photo(
+        await MediaService.send_photo(
+            event=message,
             photo=IMAGES["PROFILE"],
-            caption=text
+            caption=text,
+            context_info="Profile Photo"
         )
-    except Exception as e:
-        logger.error(f"Error sending profile photo: {e}")
-        await message.answer(text)
+    except Exception:
+        await message.answer("❌ <b>Profilni yuklashda xatolik yuz berdi.</b>")
+

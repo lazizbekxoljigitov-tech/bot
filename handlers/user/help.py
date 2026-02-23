@@ -28,11 +28,17 @@ async def cmd_help(message: Message) -> None:
         f"📩 <b>Savol va takliflar:</b> {support}\n"
         f"🤖 <b>Botimiz:</b> @{bot_info.username}"
     )
+    from services.media_service import MediaService
+    
     try:
-        await message.answer_photo(
+        await MediaService.send_photo(
+            event=message,
             photo=IMAGES["HELP"],
-            caption=help_text
+            caption=help_text,
+            context_info="Yordam bo'limi"
         )
-    except Exception as e:
-        logger.error(f"Error sending help photo: {e}")
+    except Exception:
+        # MediaService already alerts admin on failure, but we want to ensure 
+        # the user at least gets the text if the photo fails completely.
         await message.answer(help_text)
+

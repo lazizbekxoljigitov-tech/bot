@@ -32,15 +32,18 @@ async def show_vip_plans(message: Message, state: FSMContext) -> None:
     text = await VipService.get_plans_text(anime_title)
     kb = vip_plans_keyboard(plans, is_vip=is_vip, anime_title=anime_title) if plans else None
     
+    from services.media_service import MediaService
     try:
-        await message.answer_photo(
+        await MediaService.send_photo(
+            event=message,
             photo=IMAGES["VIP"],
             caption=text,
-            reply_markup=kb
+            reply_markup=kb,
+            context_info="VIP rejalari"
         )
-    except Exception as e:
-        logger.error(f"Error sending VIP photo: {e}")
+    except Exception:
         await message.answer(text, reply_markup=kb)
+
 
 @router.callback_query(F.data == "vip_plans_back")
 async def vip_plans_back_handler(callback: CallbackQuery, state: FSMContext) -> None:
@@ -53,15 +56,23 @@ async def vip_plans_back_handler(callback: CallbackQuery, state: FSMContext) -> 
     text = await VipService.get_plans_text(anime_title)
     kb = vip_plans_keyboard(plans, is_vip=is_vip, anime_title=anime_title) if plans else None
     
+    from services.media_service import MediaService
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=kb)
+        await MediaService.edit_photo_caption(
+            callback=callback,
+            caption=text,
+            reply_markup=kb,
+            context_info="VIP rejalarga qaytish"
+        )
     except Exception:
-        await callback.message.delete()
-        await callback.message.answer_photo(
+        await MediaService.send_photo(
+            event=callback,
             photo=IMAGES["VIP"],
             caption=text,
-            reply_markup=kb
+            reply_markup=kb,
+            context_info="VIP rejalarga qaytish (fallback)"
         )
+
     await callback.answer()
 
 @router.callback_query(F.data.startswith("vip_details:"))
@@ -81,13 +92,14 @@ async def view_vip_details(callback: CallbackQuery) -> None:
         "To'lovni amalga oshirish va yo'riqnomani ko'rish uchun yuqoridagi <b>bilan narx/kun</b> tugmasini bosing:"
     )
     
-    try:
-        await callback.message.edit_caption(
-            caption=text, 
-            reply_markup=vip_details_keyboard(plan)
-        )
-    except Exception:
-        await callback.message.answer(text, reply_markup=vip_details_keyboard(plan))
+    from services.media_service import MediaService
+    await MediaService.edit_photo_caption(
+        callback=callback,
+        caption=text,
+        reply_markup=vip_details_keyboard(plan),
+        context_info="VIP tafsilotlari"
+    )
+
     await callback.answer()
 
 @router.callback_query(F.data.startswith("vip_plan:"))
@@ -99,18 +111,14 @@ async def select_vip_plan(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(plan_id=plan_id)
     
     # Rasm bo'lgani uchun edit_caption ishlatiladi
-    try:
-        await callback.message.edit_caption(
-            caption=text, reply_markup=vip_payment_keyboard(plan_id)
-        )
-    except Exception:
-        try:
-            await callback.message.delete()
-        except:
-            pass
-        await callback.message.answer(
-            text, reply_markup=vip_payment_keyboard(plan_id)
-        )
+    from services.media_service import MediaService
+    await MediaService.edit_photo_caption(
+        callback=callback,
+        caption=text,
+        reply_markup=vip_payment_keyboard(plan_id),
+        context_info="VIP to'lov malumotlari"
+    )
+
     await callback.answer("💳 To'lov ma'lumotlari yuborildi.")
 
 @router.callback_query(F.data.startswith("vip_paid:"))
@@ -148,16 +156,20 @@ async def vip_screenshot_received(message: Message, state: FSMContext) -> None:
         f"━━━━━━━━━━━━━━━━━━\n"
     )
 
+    from services.media_service import MediaService
     for admin_id in ADMIN_IDS:
         try:
-            await bot.send_photo(
-                chat_id=admin_id, 
-                photo=photo_id, 
+            await MediaService.send_photo_to_chat(
+                bot=bot,
+                chat_id=admin_id,
+                photo=photo_id,
                 caption=text,
                 reply_markup=vip_admin_approve_keyboard(user.id, plan_id),
+                context_info=f"VIP Zayavka (User: {user.id})"
             )
-        except Exception as e:
-            logger.error("Admin ga yuborishda xatolik: %s", str(e))
+        except Exception:
+            pass
+
 
     await message.answer(
         "✅ <b>Zayavkangiz adminga yuborildi!</b>\n\n"

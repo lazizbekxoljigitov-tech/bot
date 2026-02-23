@@ -28,6 +28,26 @@ class DashboardStates(StatesGroup):
     waiting_setting_value = State()
     waiting_admin_id = State()
 
+@router.message(F.text == "❌ Bekor qilish", F.state.any())
+@router.message(F.text == "❌ Bekor qilish")
+async def global_cancel_handler(message: Message, state: FSMContext) -> None:
+
+    """Istalgan holatda amalni bekor qilish."""
+    current_state = await state.get_state()
+    if current_state:
+        await state.clear()
+        await message.answer(
+            "❌ <b>Amal bekor qilindi.</b>", 
+            reply_markup=admin_main_menu()
+        )
+    else:
+        # Agar holat bo'lmasa ham asosiy menyuni ko'rsatamiz
+        await message.answer(
+            "<b>Asosiy admin menyusi:</b>", 
+            reply_markup=admin_main_menu()
+        )
+
+
 async def is_admin(message: Message) -> bool:
     return await AdminModel.is_admin(message.from_user.id)
 

@@ -5,6 +5,8 @@ from models.user import UserModel
 from models.favorites import FavoritesModel
 from utils.images import IMAGES
 from keyboards.inline import favorites_keyboard, anime_view_keyboard
+from services.media_service import MediaService
+
 
 logger = logging.getLogger(__name__)
 router = Router(name="user_favorites")
@@ -27,14 +29,16 @@ async def show_favorites(message: Message) -> None:
             "Sizda hali sevimlilar yo'q. 🔍 Anime qidirish bo'limidan animelarni toping va sevimlilarga qo'shing!"
         )
         try:
-            await message.answer_photo(
+            await MediaService.send_photo(
+                event=message,
                 photo=IMAGES["SEARCH"],
                 caption=text,
-                reply_markup=favorites_keyboard([])
+                reply_markup=favorites_keyboard([]),
+                context_info="Empty Favorites Photo"
             )
-        except Exception as e:
-            logger.error(f"Error sending empty favorites photo: {e}")
-            await message.answer(text, reply_markup=favorites_keyboard([]))
+        except Exception:
+            await message.answer("❌ <b>Ma'lumot topilmadi.</b>")
+
         return
 
     text = (
