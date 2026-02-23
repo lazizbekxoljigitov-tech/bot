@@ -66,9 +66,13 @@ def admin_main_menu() -> ReplyKeyboardMarkup:
                 KeyboardButton(text="🚫 Majburiy obuna"),
             ],
             [
-                KeyboardButton(text="🛠 Boshqaruv"),
+                KeyboardButton(text="⚙️ Dashbord"),
+                KeyboardButton(text="🔍 DB Tekshirish"),
+            ],
+            [
                 KeyboardButton(text="⬅️ Foydalanuvchi paneli"),
             ],
+
         ],
         resize_keyboard=True,
     )

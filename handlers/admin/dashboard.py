@@ -51,7 +51,8 @@ async def global_cancel_handler(message: Message, state: FSMContext) -> None:
 async def is_admin(message: Message) -> bool:
     return await AdminModel.is_admin(message.from_user.id)
 
-@router.message(F.text == "🛠 Boshqaruv", is_admin)
+@router.message(F.text == "⚙️ Dashbord", is_admin)
+
 @router.callback_query(F.data == "admin_dashboard")
 async def show_dashboard(event: Message | CallbackQuery, state: FSMContext) -> None:
     """Asosiy admin paneli."""
@@ -158,9 +159,13 @@ async def view_admin_handler(callback: CallbackQuery) -> None:
 @router.callback_query(F.data.startswith("delete_admin:"), is_admin)
 async def delete_admin_dashboard(callback: CallbackQuery) -> None:
     admin_id = int(callback.data.split(":")[1])
-    await AdminModel.remove_admin(admin_id)
-    await callback.answer("✅ Admin o'chirildi.")
+    success = await AdminModel.remove_admin(admin_id)
+    if success:
+        await callback.answer("✅ Admin muvaffaqiyatli o'chirildi.", show_alert=True)
+    else:
+        await callback.answer("❌ Xatolik: Adminni o'chirib bo'lmadi.", show_alert=True)
     await dashboard_admins(callback)
+
 
 @router.callback_query(F.data == "add_new_admin", is_admin)
 async def add_admin_start(callback: CallbackQuery, state: FSMContext) -> None:
@@ -191,11 +196,21 @@ async def process_add_admin(message: Message, state: FSMContext) -> None:
     await state.clear()
     
     if success:
-        await message.answer(f"✅ <b>{full_name}</b> ({tg_id}) admin etib tayinlandi!", reply_markup=admin_main_menu())
+        await message.reply(
+            f"✅ <b>Yangi admin tayinlandi!</b>\n\n"
+            f"👤 <b>Ism:</b> {full_name}\n"
+            f"🆔 <b>ID:</b> <code>{tg_id}</code>",
+            reply_markup=admin_main_menu()
+        )
     else:
-        await message.answer("❌ Xatolik! Balki u allaqachon admindir.", reply_markup=admin_main_menu())
+        await message.reply(
+            "❌ <b>Xatolik!</b>\n\n"
+            "Ushbu foydalanuvchi allaqachon admin bo'lishi mumkin yoki bazada xatolik yuz berdi.", 
+            reply_markup=admin_main_menu()
+        )
         
     await show_dashboard(message, state)
+
 
 
 # --- STATISTIKA ---

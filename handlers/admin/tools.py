@@ -17,15 +17,11 @@ router = Router(name="admin_tools")
 async def is_admin(message: Message) -> bool:
     return await AdminModel.is_admin(message.from_user.id)
 
-@router.message(F.text == "🛠 Boshqaruv", is_admin)
+@router.message(F.text == "🔍 DB Tekshirish", is_admin)
 async def admin_tools_menu(message: Message):
-    """Admin boshqaruv menyusi."""
-    await message.answer(
-        "🛠 <b>Boshqaruv va Diagnostika</b>\n\n"
-        "Tizim holatini tekshirish uchun quyidagi buyruqdan foydalaning:\n"
-        "/check_db - Ma'lumotlar bazasi holati\n"
-        "/sys_info - Tizim ma'lumotlari"
-    )
+    """DB ni tekshirish."""
+    await check_database(message)
+
 
 @router.message(F.command == "check_db", is_admin)
 async def check_database(message: Message):
@@ -39,15 +35,17 @@ async def check_database(message: Message):
         
         db_size = os.path.getsize(DB_PATH) / 1024 # KB
         
-        await message.answer(
+        await message.reply(
             "✅ <b>Ma'lumotlar bazasi:</b>\n\n"
             f"▸ Holat: Ishlamoqda\n"
             f"▸ Integrity: <code>{integrity}</code>\n"
             f"▸ Fayl: <code>{DB_PATH}</code>\n"
             f"▸ Hajm: {db_size:.2f} KB"
         )
+
     except Exception as e:
-        await message.answer(f"❌ <b>DB Xatolik:</b>\n<code>{e}</code>")
+        await message.reply(f"❌ <b>DB Xatolik:</b>\n<code>{e}</code>")
+
 
 @router.message(F.command == "sys_info", is_admin)
 async def system_info(message: Message):
@@ -61,4 +59,5 @@ async def system_info(message: Message):
             f"▸ Log hajm: {log_size:.2f} KB"
         )
     except Exception as e:
-        await message.answer(f"❌ <b>Xatolik:</b>\n<code>{e}</code>")
+        await message.reply(f"❌ <b>Xatolik:</b>\n<code>{e}</code>")
+

@@ -287,7 +287,7 @@ def vip_plans_keyboard(plans: list[dict], is_vip: bool = False, anime_title: str
     
     if is_vip:
         builder.row(
-            InlineKeyboardButton(text="🎖 VIP Qo'llab-quvvatlash", url="https://t.me/AdminUsername")
+            InlineKeyboardButton(text="🎖 VIP Qo'llab-quvvatlash", url="https://t.me/DEV_BR0")
         )
         builder.row(
             InlineKeyboardButton(text="🎁 Eksklyuziv animelar", callback_data="search_page:vip:all:0")
