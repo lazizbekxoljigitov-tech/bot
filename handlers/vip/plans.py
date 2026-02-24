@@ -124,10 +124,12 @@ async def select_vip_plan(callback: CallbackQuery, state: FSMContext) -> None:
 @router.callback_query(F.data.startswith("vip_paid:"))
 async def vip_paid_prompt(callback: CallbackQuery, state: FSMContext) -> None:
     text = "\u25B8 To'lov screenshotini rasm sifatida yuboring:"
-    try:
-        await callback.message.edit_caption(caption=text)
-    except Exception:
-        await callback.message.answer(text)
+    from services.media_service import MediaService
+    await MediaService.edit_photo_caption(
+        callback=callback,
+        caption=text,
+        context_info="VIP to'lov prompt"
+    )
     await callback.answer()
 
 @router.message(VipPaymentStates.waiting_screenshot, F.photo)

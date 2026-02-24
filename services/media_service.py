@@ -93,3 +93,92 @@ class MediaService:
             
             raise e
 
+    @staticmethod
+    async def edit_photo_caption(
+        callback: CallbackQuery,
+        caption: str,
+        reply_markup=None,
+        context_info: str = ""
+    ) -> bool:
+        """Edit an existing photo's caption with fallback to edit_text/answer."""
+        try:
+            await callback.message.edit_caption(
+                caption=caption,
+                reply_markup=reply_markup
+            )
+            return True
+        except Exception as e:
+            logger.info(f"Failed to edit photo caption, trying edit_text: {e}")
+            try:
+                await callback.message.edit_text(
+                    text=caption,
+                    reply_markup=reply_markup
+                )
+                return True
+            except Exception as e2:
+                logger.debug(f"Failed to edit text, trying answer: {e2}")
+                try:
+                    await callback.message.answer(
+                        text=caption,
+                        reply_markup=reply_markup
+                    )
+                    return True
+                except Exception as e3:
+                    logger.error(f"MediaService error (edit_photo_caption): {e3} | Context: {context_info}")
+                    return False
+
+    @staticmethod
+    async def edit_video_caption(
+        callback: CallbackQuery,
+        caption: str,
+        reply_markup=None,
+        context_info: str = ""
+    ) -> bool:
+        """Edit an existing video's caption with fallback to edit_text/answer."""
+        try:
+            await callback.message.edit_caption(
+                caption=caption,
+                reply_markup=reply_markup
+            )
+            return True
+        except Exception as e:
+            logger.info(f"Failed to edit video caption, trying edit_text: {e}")
+            try:
+                await callback.message.edit_text(
+                    text=caption,
+                    reply_markup=reply_markup
+                )
+                return True
+            except Exception as e2:
+                logger.debug(f"Failed to edit text, trying answer: {e2}")
+                try:
+                    await callback.message.answer(
+                        text=caption,
+                        reply_markup=reply_markup
+                    )
+                    return True
+                except Exception as e3:
+                    logger.error(f"MediaService error (edit_video_caption): {e3} | Context: {context_info}")
+                    return False
+
+    @staticmethod
+    async def send_photo_to_chat(
+        bot: Bot,
+        chat_id: int,
+        photo: str,
+        caption: str,
+        reply_markup=None,
+        context_info: str = ""
+    ) -> bool:
+        """Send a photo to a specific chat ID (usually for admins)."""
+        try:
+            await bot.send_photo(
+                chat_id=chat_id,
+                photo=photo,
+                caption=caption,
+                reply_markup=reply_markup
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Failed to send photo to chat {chat_id}: {e} | Context: {context_info}")
+            return False

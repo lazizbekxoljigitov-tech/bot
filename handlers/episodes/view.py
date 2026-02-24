@@ -47,21 +47,12 @@ async def show_seasons(callback: CallbackQuery) -> None:
         f"🎞 <b>Marhamat, tanlang:</b>"
     )
 
-    try:
-        # Sezon tanlashda har doim captionni o'zgartiramiz (yangi xabarsiz)
-        await callback.message.edit_caption(
-            caption=text, reply_markup=seasons_keyboard(anime_id, seasons)
-        )
-    except Exception:
-        # Agar edit_caption o'xshamasa (masalan xabar matnli bo'lsa)
-        try:
-            await callback.message.edit_text(
-                text, reply_markup=seasons_keyboard(anime_id, seasons)
-            )
-        except Exception:
-            await callback.message.answer(
-                text, reply_markup=seasons_keyboard(anime_id, seasons)
-            )
+    await MediaService.edit_photo_caption(
+        callback=callback,
+        caption=text,
+        reply_markup=seasons_keyboard(anime_id, seasons),
+        context_info="Sezon tanlash"
+    )
 
     await callback.answer()
 
@@ -109,23 +100,12 @@ async def _show_episodes_internal(callback: CallbackQuery, anime: dict, season: 
         f"▶️ <b>Marhamat, tanlang:</b>"
     )
 
-    try:
-        # Har doim captionni tahrirlashga harakat qilamiz
-        await callback.message.edit_caption(
-            caption=text,
-            reply_markup=episodes_keyboard(anime_id, season, episodes, page, total_pages, is_single_season),
-        )
-    except Exception:
-        try:
-            await callback.message.edit_text(
-                text,
-                reply_markup=episodes_keyboard(anime_id, season, episodes, page, total_pages, is_single_season),
-            )
-        except Exception:
-            await callback.message.answer(
-                text,
-                reply_markup=episodes_keyboard(anime_id, season, episodes, page, total_pages, is_single_season),
-            )
+    await MediaService.edit_photo_caption(
+        callback=callback,
+        caption=text,
+        reply_markup=episodes_keyboard(anime_id, season, episodes, page, total_pages, is_single_season),
+        context_info="Qism tanlash"
+    )
 
     await callback.answer()
 
