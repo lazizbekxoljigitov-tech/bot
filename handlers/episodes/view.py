@@ -44,7 +44,7 @@ async def show_seasons(callback: CallbackQuery) -> None:
     text = (
         f"<b>{anime['title']}</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n\n"
-        f"🎞 <b>Sezonni tanlang:</b>"
+        f"🎞 <b>Marhamat, tanlang:</b>"
     )
 
     try:
@@ -101,12 +101,12 @@ async def _show_episodes_internal(callback: CallbackQuery, anime: dict, season: 
         await callback.answer("Bu sezonda qismlar topilmadi.")
         return
 
-    title_part = f" | {season}-Sezon"
+    title_part = f" | {season}"
     text = (
         f"<b>{anime['title']}</b>{title_part}\n"
         f"━━━━━━━━━━━━━━━━━━\n"
-        f"<b>🎞 Jami qismlar:</b> {total_count}\n\n"
-        f"▶️ <b>Qismni tanlang:</b>"
+        f"<b>🎞 Jami:</b> {total_count}\n\n"
+        f"▶️ <b>Marhamat, tanlang:</b>"
     )
 
     try:

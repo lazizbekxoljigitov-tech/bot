@@ -53,7 +53,7 @@ async def add_episode_anime_selected(callback: CallbackQuery, state: FSMContext)
     anime = await AnimeModel.get_by_id(anime_id)
     await callback.message.edit_text(
         f"<b>{anime['title']}</b>\n\n"
-        "\u25B8 Sezon raqamini kiriting:"
+        "\u25B8 Raqam kiriting (Sezon):"
     )
     await callback.answer()
 
@@ -70,7 +70,7 @@ async def add_episode_season(message: Message, state: FSMContext) -> None:
         return
     await state.update_data(season_number=season)
     await state.set_state(AddEpisodeStates.episode_number)
-    await message.answer("\u25B8 Qism raqamini kiriting:")
+    await message.answer("\u25B8 Raqam kiriting (Qism):")
 
 
 @router.message(AddEpisodeStates.episode_number, is_admin)
@@ -148,10 +148,9 @@ async def add_episode_is_vip(message: Message, state: FSMContext) -> None:
         vip_text = "◆ VIP" if is_vip else "○ Oddiy"
 
         await message.answer(
-            f"✔ <b>Qism muvaffaqiyatli qo'shildi!</b>\n\n"
+            f"✔ <b>Muvaffaqiyatli qo'shildi!</b>\n\n"
             f"▸ Anime: {anime['title'] if anime else '---'}\n"
-            f"▸ Sezon: {data['season_number']}\n"
-            f"▸ Qism: {data['episode_number']}\n"
+            f"▸ S{data['season_number']} | E{data['episode_number']}\n"
             f"▸ Holat: {vip_text}\n"
             f"▸ ID: {episode_id}",
             reply_markup=admin_main_menu(),
@@ -224,11 +223,11 @@ async def edit_episode_selected(message: Message, state: FSMContext) -> None:
     await state.update_data(edit_episode_id=episode_id)
     await state.set_state(EditEpisodeStates.select_field)
     await message.answer(
-        f"<b>S{episode['season_number']}E{episode['episode_number']}</b>\n\n"
+        f"<b>S{episode['season_number']} | E{episode['episode_number']}</b>\n\n"
         "Qaysi maydonni o'zgartirasiz?\n\n"
         "1. title - Nomi\n"
-        "2. season_number - Sezon raqami\n"
-        "3. episode_number - Qism raqami\n"
+        "2. season_number - S\n"
+        "3. episode_number - E\n"
         "4. is_vip - VIP holati (0 yoki 1)\n\n"
         "Maydon nomini yozing:"
     )

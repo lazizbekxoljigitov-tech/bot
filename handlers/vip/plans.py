@@ -88,8 +88,8 @@ async def view_vip_details(callback: CallbackQuery) -> None:
         f"<b>💎 {plan['name']}</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n\n"
         f"💰 <b>Narxi:</b> {plan['price']} so'm\n"
-        f"⏳ <b>Muddati:</b> {plan['duration_days']} kun\n\n"
-        "To'lovni amalga oshirish va yo'riqnomani ko'rish uchun yuqoridagi <b>bilan narx/kun</b> tugmasini bosing:"
+        f"⏳ <b>Muddat:</b> {plan['duration_days']} kun\n\n"
+        "✨ To'lov ma'lumotlarini olish va faollashritish uchun quyidagi tugmani bosing:"
     )
     
     from services.media_service import MediaService

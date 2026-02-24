@@ -25,7 +25,7 @@ class AnimeService:
             f"━━━━━━━━━━━━━━━━━━\n\n"
             f"🎭 <b>Janr:</b> {anime['genre']}\n"
             f"🔢 <b>Qismlar:</b> {ep_count}/{anime['total_episodes']}\n"
-            f"📅 <b>Sezonlar:</b> {anime['season_count']}\n"
+            f"📅 <b>S/E:</b> {anime['season_count']} | {ep_count}\n"
             f"👁 <b>Ko'rilgan:</b> {anime['views']}\n"
             f"🛡 <b>Holati:</b> {vip_status}\n"
             f"🆔 <b>Kod:</b> <code>{anime['code']}</code>\n\n"
@@ -47,7 +47,7 @@ class AnimeService:
         vip_status = "💎 VIP" if episode["is_vip"] else "🆓 Bepul"
         text = (
             f"<b>🎬 {anime_title}</b>\n"
-            f"🎞 <b>{episode['season_number']}-Sezon | {episode['episode_number']}-Qism</b>\n"
+            f"🎞 <b>S{episode['season_number']} | E{episode['episode_number']}</b>\n"
             f"━━━━━━━━━━━━━━━━━━\n\n"
             f"📝 <b>Nomi:</b> {episode['title'] or 'Nomsiz'}\n"
             f"🛡 <b>Holati:</b> {vip_status}\n"

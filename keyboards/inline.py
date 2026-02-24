@@ -59,7 +59,7 @@ def seasons_keyboard(anime_id: int, seasons: list[int]) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for s in seasons:
         builder.button(
-            text=f"🎞 {s}-Sezon",
+            text=f"🎞 {s}",
             callback_data=f"season:{anime_id}:{s}:0",
         )
     builder.button(
@@ -88,7 +88,7 @@ def episodes_keyboard(
     for ep in episodes:
         vip_mark = " 💎" if ep["is_vip"] else ""
         builder.button(
-            text=f"▶️ {ep['episode_number']}-qism{vip_mark}",
+            text=f"▶️ {ep['episode_number']}{vip_mark}",
             callback_data=f"episode:{ep['id']}",
         )
 
