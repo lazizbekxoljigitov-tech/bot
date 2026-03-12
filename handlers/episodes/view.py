@@ -21,13 +21,50 @@ from config import EPISODES_PER_PAGE
 from services.media_service import MediaService
 
 
+from models.favorites import FavoritesModel
+from models.user import UserModel
+
+
 logger = logging.getLogger(__name__)
 router = Router(name="episodes_view")
 
 
+@router.callback_query(F.data.startswith("anime_details:"))
+async def show_anime_details(callback: CallbackQuery) -> None:
+    """Anime ma'lumotlarini qayta ko'rsatish (Seamless 'Back' navigation)."""
+    anime_id = int(callback.data.split(":")[1])
+    anime = await AnimeModel.get_by_id(anime_id)
+    
+    if not anime:
+        await callback.answer("Anime topilmadi.")
+        return
+
+    # Sevimlilarda bormi-yo'qligini tekshirish
+    db_user = await UserModel.get_by_telegram_id(callback.from_user.id)
+    is_fav = await FavoritesModel.is_favorite(db_user["id"], anime_id) if db_user else False
+    
+    text = await AnimeService.get_anime_info_text(anime_id)
+    poster = AnimeService.get_poster(anime)
+    
+    # Silliq almashuv (Video/Photo -> Photo)
+    success = await MediaService.replace_media_with_photo(
+        callback=callback,
+        photo=poster,
+        caption=text,
+        reply_markup=anime_view_keyboard(anime_id, is_fav),
+        context_info=f"Anime Details (Back): {anime['title']} (ID: {anime_id})"
+    )
+    
+    if not success:
+        # Agar rasm bo'lmasa yoki edit xato bersa, shunchaki xabar yuboramiz
+        await callback.message.answer(text, reply_markup=anime_view_keyboard(anime_id, is_fav))
+    
+    await callback.answer()
+
+
 @router.callback_query(F.data.startswith("watch:"))
 async def show_seasons(callback: CallbackQuery) -> None:
-    """Anime sezonlarini ko'rsatish (Doimiy sezon tanlovi)."""
+    """Anime sezonlarini ko'rsatish (Skip if single season)."""
     anime_id = int(callback.data.split(":")[1])
     anime = await AnimeModel.get_by_id(anime_id)
 
@@ -41,10 +78,15 @@ async def show_seasons(callback: CallbackQuery) -> None:
         await callback.answer("Bu anime uchun qismlar hali qo'shilmagan.")
         return
 
+    # Agar faqat bitta sezon bo'lsa, to'g'ridan-to'g'ri qismlarni ko'rsatamiz
+    if len(seasons) == 1:
+        await _show_episodes_internal(callback, anime, seasons[0], 0, True)
+        return
+
     text = (
         f"<b>{anime['title']}</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n\n"
-        f"🎞 <b>Marhamat, tanlang:</b>"
+        f"🎞 <b>Sezonni tanlang:</b>"
     )
 
     await MediaService.edit_photo_caption(
@@ -92,12 +134,11 @@ async def _show_episodes_internal(callback: CallbackQuery, anime: dict, season: 
         await callback.answer("Bu sezonda qismlar topilmadi.")
         return
 
-    title_part = f" | {season}"
     text = (
-        f"<b>{anime['title']}</b>{title_part}\n"
+        f"<b>{anime['title']}</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"<b>🎞 Jami:</b> {total_count}\n\n"
-        f"▶️ <b>Marhamat, tanlang:</b>"
+        f"<b>Marhamat, tanlang:</b>"
     )
 
     await MediaService.edit_photo_caption(
@@ -154,20 +195,19 @@ async def watch_episode(callback: CallbackQuery, state: FSMContext) -> None:
     await EpisodeModel.increment_views(episode_id)
 
     # Qism ma'lumotlarini formatlash
-    text = await AnimeService.format_episode_text(episode, anime["title"])
+    text = await AnimeService.format_episode_text(episode, anime)
 
-    try:
-        # Eski xabarni (posterni) o'chirish - UI yanada toza bo'lishi uchun
-        await callback.message.delete()
-        
-        await MediaService.send_video(
-            event=callback,
-            video=episode["video_file_id"],
-            caption=text,
-            reply_markup=episode_view_keyboard(anime["id"], episode_id),
-            context_info=f"Episode: {anime['title']} S{episode['season_number']}E{episode['episode_number']} (ID: {episode_id})"
-        )
-    except Exception:
-        await callback.message.answer("❌ <b>Videoni yuborib bo'lmadi. Adminlar ogohlantirildi.</b>")
+    # Seamless media replacement (Edit Photo -> Video)
+    success = await MediaService.replace_media_with_video(
+        callback=callback,
+        video=episode["video_file_id"],
+        caption=text,
+        reply_markup=episode_view_keyboard(anime["id"], episode_id),
+        context_info=f"Episode: {anime['title']} S{episode['season_number']}E{episode['episode_number']} (ID: {episode_id})"
+    )
+    
+    if not success:
+        await callback.message.answer("❌ <b>Videoni yuklab bo'lmadi. Adminlar ogohlantirildi.</b>")
+    
     await callback.answer()
 

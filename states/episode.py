@@ -15,6 +15,13 @@ class AddEpisodeStates(StatesGroup):
     is_vip = State()          # VIP yoki oddiy
 
 
+class SmartAddEpisodeStates(StatesGroup):
+    """Video yuborilganda boshlanadigan jarayon."""
+    select_anime = State()
+    episode_number = State()
+    is_vip = State()
+
+
 class EditEpisodeStates(StatesGroup):
     """Qism tahrirlash holatlari."""
     select_anime = State()    # Anime tanlash

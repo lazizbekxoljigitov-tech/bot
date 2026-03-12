@@ -35,8 +35,9 @@ async def add_anime_start(message: Message, state: FSMContext) -> None:
     """Anime qo'shish jarayonini boshlash."""
     await state.set_state(AddAnimeStates.title)
     await message.answer(
-        "<b>\u002B Yangi anime qo'shish</b>\n\n"
-        "\u25B8 Anime nomini kiriting:",
+        "<b>➕ Yangi anime qo'shish</b>\n"
+        "━━━━━━━━━━━━━━━━━━\n\n"
+        "◈ Anime nomini kiriting:",
         reply_markup=cancel_keyboard(),
     )
 
@@ -47,7 +48,7 @@ async def add_anime_title(message: Message, state: FSMContext) -> None:
     await state.update_data(title=message.text.strip())
     await state.set_state(AddAnimeStates.code)
     await message.answer(
-        "\u25B8 Anime kodini kiriting (unique, masalan: <code>naruto</code>):"
+        "◈ Anime kodini kiriting (unique, masalan: <code>naruto</code>):"
     )
 
 
@@ -64,7 +65,7 @@ async def add_anime_code(message: Message, state: FSMContext) -> None:
     await state.update_data(code=code)
     await state.set_state(AddAnimeStates.description)
     await message.answer(
-        "\u25B8 Anime tavsifini kiriting:",
+        "◈ Anime tavsifini kiriting:",
         reply_markup=skip_keyboard(),
     )
 
@@ -78,7 +79,7 @@ async def add_anime_description(message: Message, state: FSMContext) -> None:
         await state.update_data(description=message.text.strip())
     await state.set_state(AddAnimeStates.genre)
     await message.answer(
-        "\u25B8 Janrni kiriting (masalan: Action, Romance, Fantasy):",
+        "◈ Janrni kiriting (masalan: Action, Romance, Fantasy):",
         reply_markup=skip_keyboard(),
     )
 
@@ -92,7 +93,7 @@ async def add_anime_genre(message: Message, state: FSMContext) -> None:
         await state.update_data(genre=message.text.strip())
     await state.set_state(AddAnimeStates.season_count)
     await message.answer(
-        "\u25B8 Sezonlar sonini kiriting (raqam):",
+        "◈ Sezonlar sonini kiriting (raqam):",
         reply_markup=cancel_keyboard(),
     )
 
@@ -109,7 +110,7 @@ async def add_anime_season_count(message: Message, state: FSMContext) -> None:
         return
     await state.update_data(season_count=count)
     await state.set_state(AddAnimeStates.total_episodes)
-    await message.answer("\u25B8 Umumiy qismlar sonini kiriting (raqam):")
+    await message.answer("◈ Umumiy qismlar sonini kiriting (raqam):")
 
 
 @router.message(AddAnimeStates.total_episodes, is_admin)
@@ -123,9 +124,39 @@ async def add_anime_total_episodes(message: Message, state: FSMContext) -> None:
         await message.answer("\u2716 Iltimos, to'g'ri raqam kiriting:")
         return
     await state.update_data(total_episodes=count)
+    await state.set_state(AddAnimeStates.status)
+    await message.answer(
+        "<b>\u25B8 Anime holatini kiriting:</b>\n"
+        "(Masalan: <code>Tugallangan</code>, <code>Davom etmoqda</code>)",
+        reply_markup=skip_keyboard(),
+    )
+
+
+@router.message(AddAnimeStates.status, is_admin)
+async def add_anime_status(message: Message, state: FSMContext) -> None:
+    """Anime holati qabul qilish."""
+    if message.text == "⏩ O'tkazib yuborish":
+        await state.update_data(status="Tugallangan")
+    else:
+        await state.update_data(status=message.text.strip())
+    await state.set_state(AddAnimeStates.translator)
+    await message.answer(
+        "<b>\u25B8 Tarjimonni kiriting:</b>\n"
+        "(Masalan: <code>AniBro</code>)",
+        reply_markup=skip_keyboard(),
+    )
+
+
+@router.message(AddAnimeStates.translator, is_admin)
+async def add_anime_translator(message: Message, state: FSMContext) -> None:
+    """Tarjimon qabul qilish."""
+    if message.text == "⏩ O'tkazib yuborish":
+        await state.update_data(translator="AniBro")
+    else:
+        await state.update_data(translator=message.text.strip())
     await state.set_state(AddAnimeStates.poster)
     await message.answer(
-        "\u25B8 Poster rasmini yuboring (yoki o'tkazib yuboring):",
+        "◈ Poster rasmini yuboring (yoki o'tkazib yuboring):",
         reply_markup=skip_keyboard(),
     )
 
@@ -197,19 +228,22 @@ async def add_anime_is_vip(message: Message, state: FSMContext) -> None:
             total_episodes=data.get("total_episodes", 0),
             poster_file_id=data.get("poster_file_id", ""),
             poster_url=data.get("poster_url", ""),
+            status=data.get("status", "Tugallangan"),
+            translator=data.get("translator", "AniBro"),
             is_vip=is_vip,
         )
         await state.clear()
         
         vip_text = "◆ VIP" if is_vip else "○ Oddiy"
         await message.answer(
-            f"✔ <b>Anime muvaffaqiyatli qo'shildi!</b>\n\n"
-            f"▸ Nom: {data['title']}\n"
-            f"▸ Kod: {data['code']}\n"
-            f"▸ Janr: {data.get('genre', '---')}\n"
-            f"▸ Sezonlar: {data.get('season_count', 1)}\n"
-            f"▸ Holat: {vip_text}\n"
-            f"▸ ID: {anime_id}",
+            f"✔ <b>Anime muvaffaqiyatli qo'shildi!</b>\n"
+            f"━━━━━━━━━━━━━━━━━━\n\n"
+            f"◈ Nom: {data['title']}\n"
+            f"◈ Kod: {data['code']}\n"
+            f"◈ Janr: {data.get('genre', '---')}\n"
+            f"◈ Sezonlar: {data.get('season_count', 1)}\n"
+            f"◈ Holat: {vip_text}\n"
+            f"◈ ID: {anime_id}",
             reply_markup=admin_main_menu(),
         )
     except Exception as e:
@@ -260,10 +294,12 @@ async def edit_anime_selected(callback: CallbackQuery, state: FSMContext) -> Non
         "3. genre - Janr\n"
         "4. season_count - Sezonlar soni\n"
         "5. total_episodes - Qismlar soni\n"
-        "6. is_vip - VIP holati (0 yoki 1)\n"
-        "7. poster_url - Rasm URL\n"
-        "8. poster_file_id - Rasm ID\n\n"
-        "Maydon nomini yozing (masalan: <code>poster_url</code>):"
+        "6. status - Holati\n"
+        "7. translator - Tarjimon\n"
+        "8. is_vip - VIP holati (0 yoki 1)\n"
+        "9. poster_url - Rasm URL\n"
+        "10. poster_file_id - Rasm ID\n\n"
+        "Maydon nomini yozing (masalan: <code>status</code>):"
     )
     await callback.answer()
 
@@ -274,7 +310,7 @@ async def edit_anime_field_selected(message: Message, state: FSMContext) -> None
     field = message.text.strip().lower()
     allowed_fields = [
         "title", "description", "genre", "season_count", 
-        "total_episodes", "is_vip", "poster_url", "poster_file_id"
+        "total_episodes", "status", "translator", "is_vip", "poster_url", "poster_file_id"
     ]
 
     if field not in allowed_fields:

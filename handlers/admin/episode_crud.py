@@ -10,7 +10,8 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from config import ADMIN_IDS
-from states.episode import AddEpisodeStates, EditEpisodeStates
+from aiogram.filters import StateFilter
+from states.episode import AddEpisodeStates, EditEpisodeStates, SmartAddEpisodeStates
 from models.anime import AnimeModel
 from models.episode import EpisodeModel
 from models.admin import AdminModel
@@ -26,7 +27,112 @@ router = Router(name="admin_episode_crud")
 
 
 # ==============================================================
-# QISM QO'SHISH
+# SMART ADD (VIDEO YUBORILGANDA)
+# ==============================================================
+
+@router.message(StateFilter(None), is_admin, F.video | F.document)
+async def smart_add_video(message: Message, state: FSMContext) -> None:
+    """Admin video yuborganda qism qo'shishni boshlash."""
+    # Agar document bo'lsa va video bo'lmasa, file_id ni olamiz
+    if message.document:
+        if not message.document.mime_type.startswith("video/"):
+            return # Video bo'lmasa o'tkazib yuboramiz
+        file_id = message.document.file_id
+    else:
+        file_id = message.video.file_id
+        
+    await state.update_data(video_file_id=file_id)
+    await state.set_state(SmartAddEpisodeStates.select_anime)
+    
+    anime_list = await AnimeModel.get_all(limit=50)
+    await message.answer(
+        "<b>🎬 Qism qo'shish (Smart Add)</b>\n"
+        "━━━━━━━━━━━━━━━━━━\n\n"
+        "◈ Videoni qaysi animega qo'shmoqchisiz?",
+        reply_markup=anime_select_keyboard(anime_list, "smart_add_anime")
+    )
+
+
+@router.callback_query(F.data.startswith("smart_add_anime:"), is_admin)
+async def smart_add_anime_selected(callback: CallbackQuery, state: FSMContext) -> None:
+    """Smart add uchun anime tanlandi."""
+    anime_id = int(callback.data.split(":")[1])
+    await state.update_data(anime_id=anime_id)
+    await state.set_state(SmartAddEpisodeStates.episode_number)
+    
+    anime = await AnimeModel.get_by_id(anime_id)
+    await callback.message.edit_text(
+        f"<b>📺 {anime['title']}</b>\n\n"
+        "Qism raqamini kiriting (masalan: 12):"
+    )
+    await callback.answer()
+
+
+@router.message(SmartAddEpisodeStates.episode_number, is_admin)
+async def smart_add_number(message: Message, state: FSMContext) -> None:
+    """Smart add uchun qism raqami kiritildi."""
+    try:
+        ep_num = int(message.text.strip())
+    except ValueError:
+        await message.answer("⚠️ Faqat raqam kiriting:")
+        return
+        
+    await state.update_data(episode_number=ep_num)
+    await state.set_state(SmartAddEpisodeStates.is_vip)
+    await message.answer(
+        f"<b>🔢 Qism: {ep_num}</b>\n\nUshbu qism VIP bo'lsinmi?",
+        reply_markup=vip_choice_keyboard()
+    )
+
+
+@router.message(SmartAddEpisodeStates.is_vip, is_admin)
+async def smart_add_finalize(message: Message, state: FSMContext) -> None:
+    """Smart add yakunlash."""
+    if message.text == "Ha (VIP)":
+        is_vip = 1
+    elif message.text == "Yo'q (Oddiy)":
+        is_vip = 0
+    else:
+        await message.answer("⚠️ Tugmalardan tanlang.")
+        return
+
+    data = await state.get_data()
+    await state.clear()
+    
+    try:
+        # Check if critical data is present
+        if "video_file_id" not in data or "anime_id" not in data or "episode_number" not in data:
+            raise KeyError("Ma'lumotlar to'liq emas (video_file_id, anime_id yoki episode_number yetishmaydi)")
+
+        # Season default to 1, title as empty (clean)
+        episode_id = await EpisodeModel.create(
+            anime_id=data["anime_id"],
+            season_number=1, 
+            episode_number=data["episode_number"],
+            title="", 
+            video_file_id=data["video_file_id"],
+            is_vip=is_vip
+        )
+        
+        anime = await AnimeModel.get_by_id(data["anime_id"])
+        status_text = "💎 VIP" if is_vip else "🔘 Oddiy"
+        
+        await message.answer(
+            f"✔ <b>Qism muvaffaqiyatli qo'shildi!</b>\n"
+            f"━━━━━━━━━━━━━━━━━━\n\n"
+            f"◈ Anime: <b>{anime['title']}</b>\n"
+            f"◈ Qism: <b>{data['episode_number']}</b>\n"
+            f"◈ Holat: <b>{status_text}</b>\n"
+            f"◈ ID: <b>{episode_id}</b>",
+            reply_markup=admin_main_menu()
+        )
+    except Exception as e:
+        logger.error(f"Smart add error: {e}")
+        await message.answer(f"❌ Xatolik: {e}", reply_markup=admin_main_menu())
+
+
+# ==============================================================
+# QISM QO'SHISH (ESKI USUL - YANGILANGAN)
 # ==============================================================
 
 @router.message(F.text == "➕ Qism qo'shish", is_admin)
@@ -34,11 +140,13 @@ async def add_episode_start(message: Message, state: FSMContext) -> None:
     """Qism qo'shish - anime tanlash."""
     anime_list = await AnimeModel.get_all(limit=50)
     if not anime_list:
-        await message.answer("\u25B8 Avval anime qo'shing.")
+        await message.answer("⚠️ Avval anime qo'shing.")
         return
     await state.set_state(AddEpisodeStates.select_anime)
     await message.answer(
-        "<b>\u002B Qism qo'shish</b>\n\nQaysi animega qism qo'shmoqchisiz?",
+        "<b>➕ Qism qo'shish</b>\n"
+        "━━━━━━━━━━━━━━━━━━\n\n"
+        "◈ Qaysi animega qism qo'shmoqchisiz?",
         reply_markup=anime_select_keyboard(anime_list, "add_ep_anime"),
     )
 
@@ -47,30 +155,15 @@ async def add_episode_start(message: Message, state: FSMContext) -> None:
 async def add_episode_anime_selected(callback: CallbackQuery, state: FSMContext) -> None:
     """Qism qo'shish uchun anime tanlangan."""
     anime_id = int(callback.data.split(":")[1])
-    await state.update_data(anime_id=anime_id)
-    await state.set_state(AddEpisodeStates.season_number)
+    await state.update_data(anime_id=anime_id, season_number=1) # Default season 1
+    await state.set_state(AddEpisodeStates.episode_number)
 
     anime = await AnimeModel.get_by_id(anime_id)
     await callback.message.edit_text(
         f"<b>{anime['title']}</b>\n\n"
-        "\u25B8 Raqam kiriting (Sezon):"
+        "🔢 Qism raqamini kiriting:"
     )
     await callback.answer()
-
-
-@router.message(AddEpisodeStates.season_number, is_admin)
-async def add_episode_season(message: Message, state: FSMContext) -> None:
-    """Sezon raqamini qabul qilish."""
-    try:
-        season = int(message.text.strip())
-        if season < 1:
-            raise ValueError
-    except ValueError:
-        await message.answer("\u2716 To'g'ri raqam kiriting:")
-        return
-    await state.update_data(season_number=season)
-    await state.set_state(AddEpisodeStates.episode_number)
-    await message.answer("\u25B8 Raqam kiriting (Qism):")
 
 
 @router.message(AddEpisodeStates.episode_number, is_admin)
@@ -78,91 +171,81 @@ async def add_episode_number(message: Message, state: FSMContext) -> None:
     """Qism raqamini qabul qilish."""
     try:
         ep_num = int(message.text.strip())
-        if ep_num < 1:
-            raise ValueError
     except ValueError:
-        await message.answer("\u2716 To'g'ri raqam kiriting:")
+        await message.answer("⚠️ To'g'ri raqam kiriting:")
         return
     await state.update_data(episode_number=ep_num)
-    await state.set_state(AddEpisodeStates.title)
-    await message.answer(
-        "\u25B8 Qism nomini kiriting (ixtiyoriy, bo'sh qoldirsa ham bo'ladi):",
-        reply_markup=cancel_keyboard(),
-    )
-
-
-@router.message(AddEpisodeStates.title, is_admin)
-async def add_episode_title(message: Message, state: FSMContext) -> None:
-    """Qism nomini qabul qilish."""
-    await state.update_data(title=message.text.strip())
     await state.set_state(AddEpisodeStates.video)
     await message.answer(
-        "\u25B8 Qism videosini yuboring:",
+        "🎬 <b>Qism videosini yuboring:</b>\n"
+        "━━━━━━━━━━━━━━━━━━",
         reply_markup=cancel_keyboard(),
     )
 
 
-@router.message(AddEpisodeStates.video, is_admin, F.video)
+@router.message(AddEpisodeStates.video, is_admin, F.video | F.document)
 async def add_episode_video(message: Message, state: FSMContext) -> None:
     """Video faylni qabul qilish."""
-    file_id = message.video.file_id
+    if message.document:
+        if not message.document.mime_type.startswith("video/"):
+            await message.answer("⚠️ Iltimos, video fayl yuboring.")
+            return
+        file_id = message.document.file_id
+    else:
+        file_id = message.video.file_id
+
     await state.update_data(video_file_id=file_id)
     await state.set_state(AddEpisodeStates.is_vip)
     await message.answer(
-        "\u25B8 Bu qism VIP bo'ladimi?",
+        "💎 <b>Bu qism VIP bo'ladimi?</b>",
         reply_markup=vip_choice_keyboard(),
     )
 
 
-@router.message(AddEpisodeStates.video, is_admin)
-async def add_episode_video_invalid(message: Message, state: FSMContext) -> None:
-    """Video bo'lmagan xabar."""
-    await message.answer("\u25B8 Iltimos, video fayl yuboring.")
-
-
 @router.message(AddEpisodeStates.is_vip, is_admin)
 async def add_episode_is_vip(message: Message, state: FSMContext) -> None:
-    """VIP holatini belgilash va qismni saqlash."""
+    """Finalize."""
     if message.text == "Ha (VIP)":
         is_vip = 1
     elif message.text == "Yo'q (Oddiy)":
         is_vip = 0
     else:
-        await message.answer("\u25B8 Tugmalardan tanlang.")
+        await message.answer("⚠️ Tugmalardan tanlang.")
         return
 
     data = await state.get_data()
+    await state.clear()
 
     try:
+        # Check if critical data is present
+        if "video_file_id" not in data or "anime_id" not in data or "episode_number" not in data:
+            raise KeyError("Ma'lumotlar to'liq emas (video_file_id, anime_id yoki episode_number yetishmaydi)")
+
         episode_id = await EpisodeModel.create(
             anime_id=data["anime_id"],
-            season_number=data["season_number"],
+            season_number=data.get("season_number", 1),
             episode_number=data["episode_number"],
-            title=data.get("title", ""),
+            title="", # No title prefix/emoji
             video_file_id=data["video_file_id"],
             is_vip=is_vip,
         )
-        await state.clear()
 
         anime = await AnimeModel.get_by_id(data["anime_id"])
-        vip_text = "◆ VIP" if is_vip else "○ Oddiy"
+        vip_text = "💎 VIP" if is_vip else "🔘 Oddiy"
 
         await message.answer(
-            f"✔ <b>Muvaffaqiyatli qo'shildi!</b>\n\n"
-            f"▸ Anime: {anime['title'] if anime else '---'}\n"
-            f"▸ S{data['season_number']} | E{data['episode_number']}\n"
-            f"▸ Holat: {vip_text}\n"
-            f"▸ ID: {episode_id}",
+            f"✔ <b>Muvaffaqiyatli qo'shildi!</b>\n"
+            f"━━━━━━━━━━━━━━━━━━\n\n"
+            f"◈ Anime: {anime['title']}\n"
+            f"◈ Qism: {data['episode_number']}\n"
+            f"◈ Holat: {vip_text}\n"
+            f"◈ ID: {episode_id}",
             reply_markup=admin_main_menu(),
         )
     except Exception as e:
         logger.error(f"Qism qo'shishda xatolik: {e}")
-        await message.answer(
-            f"✖ <b>Xatolik yuz berdi!</b>\n"
-            f"Qismni ma'lumotlar bazasiga saqlashda muammo yuzaga keldi.\n\n"
-            f"Xato: <code>{str(e)}</code>",
-            reply_markup=admin_main_menu()
-        )
+        await message.answer(f"❌ Xatolik: {e}", reply_markup=admin_main_menu())
+
 
 
 # ==============================================================
@@ -316,7 +399,7 @@ async def delete_episode_anime_selected(callback: CallbackQuery) -> None:
     builder = InlineKeyboardBuilder()
     for ep in episodes:
         builder.button(
-            text=f"\u2716 S{ep['season_number']}E{ep['episode_number']}",
+            text=f"{ep['episode_number']}-qism",
             callback_data=f"del_ep_confirm:{ep['id']}",
         )
     builder.adjust(3)

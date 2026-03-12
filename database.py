@@ -58,6 +58,8 @@ class Database:
                 total_episodes INTEGER NOT NULL DEFAULT 0,
                 poster_file_id TEXT DEFAULT '',
                 poster_url TEXT DEFAULT '',
+                status TEXT DEFAULT 'Tugallangan',
+                translator TEXT DEFAULT 'AniBro',
                 is_vip INTEGER NOT NULL DEFAULT 0,
                 views INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -98,6 +100,7 @@ class Database:
             CREATE TABLE IF NOT EXISTS channels (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 channel_id TEXT UNIQUE NOT NULL,
+                channel_name TEXT NOT NULL DEFAULT '',
                 channel_link TEXT NOT NULL DEFAULT '',
                 added_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
@@ -176,5 +179,25 @@ class Database:
             await db.commit()
             print("Migration successful: poster_url added.")
         
+        # Add channel_name to channels table if it doesn't exist
+        try:
+            await db.execute("SELECT channel_name FROM channels LIMIT 1")
+        except Exception:
+            print("Migrating: Adding channel_name column to channels table...")
+            await db.execute("ALTER TABLE channels ADD COLUMN channel_name TEXT DEFAULT ''")
+            await db.commit()
+            print("Migration successful: channel_name added.")
+        
+        # Add status and translator to anime table if they don't exist
+        try:
+            await db.execute("SELECT status FROM anime LIMIT 1")
+        except Exception:
+            print("Migrating: Adding status and translator columns to anime table...")
+            await db.execute("ALTER TABLE anime ADD COLUMN status TEXT DEFAULT 'Tugallangan'")
+            await db.execute("ALTER TABLE anime ADD COLUMN translator TEXT DEFAULT 'AniBro'")
+            await db.commit()
+            print("Migration successful: status and translator added.")
+        
         # You can add more migrations here as the schema evolves
+
 

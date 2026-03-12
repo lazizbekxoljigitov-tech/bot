@@ -5,7 +5,7 @@ Handles sending media with robust error handling and automated admin alerting.
 
 import logging
 from aiogram import Bot
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InputMediaPhoto, InputMediaVideo
 from config import ADMIN_IDS
 
 logger = logging.getLogger(__name__)
@@ -160,6 +160,78 @@ class MediaService:
                 except Exception as e3:
                     logger.error(f"MediaService error (edit_video_caption): {e3} | Context: {context_info}")
                     return False
+
+    @staticmethod
+    async def replace_media_with_video(
+        callback: CallbackQuery,
+        video: str,
+        caption: str,
+        reply_markup=None,
+        context_info: str = ""
+    ) -> bool:
+        """Seamlessly replace current media (photo or video) with a new video."""
+        try:
+            await callback.message.edit_media(
+                media=InputMediaVideo(
+                    media=video,
+                    caption=caption,
+                    parse_mode="HTML"
+                ),
+                reply_markup=reply_markup
+            )
+            return True
+        except Exception as e:
+            logger.error(f"MediaService error (replace_media_with_video): {e} | Context: {context_info}")
+            # Fallback: delete current and send new
+            try:
+                await callback.message.delete()
+                bot: Bot = callback.bot
+                await bot.send_video(
+                    chat_id=callback.message.chat.id,
+                    video=video,
+                    caption=caption,
+                    reply_markup=reply_markup
+                )
+                return True
+            except Exception as e2:
+                logger.error(f"Fallback send_video failed: {e2}")
+                return False
+
+    @staticmethod
+    async def replace_media_with_photo(
+        callback: CallbackQuery,
+        photo: str,
+        caption: str,
+        reply_markup=None,
+        context_info: str = ""
+    ) -> bool:
+        """Seamlessly replace current media (photo or video) with a new photo."""
+        try:
+            await callback.message.edit_media(
+                media=InputMediaPhoto(
+                    media=photo,
+                    caption=caption,
+                    parse_mode="HTML"
+                ),
+                reply_markup=reply_markup
+            )
+            return True
+        except Exception as e:
+            logger.error(f"MediaService error (replace_media_with_photo): {e} | Context: {context_info}")
+            # Fallback
+            try:
+                await callback.message.delete()
+                bot: Bot = callback.bot
+                await bot.send_photo(
+                    chat_id=callback.message.chat.id,
+                    photo=photo,
+                    caption=caption,
+                    reply_markup=reply_markup
+                )
+                return True
+            except Exception as e2:
+                logger.error(f"Fallback send_photo failed: {e2}")
+                return False
 
     @staticmethod
     async def send_photo_to_chat(

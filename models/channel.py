@@ -10,12 +10,12 @@ class ChannelModel:
     """Provides async database operations for the channels table."""
 
     @staticmethod
-    async def add(channel_id: str, channel_link: str) -> int:
+    async def add(channel_id: str, channel_name: str, channel_link: str) -> int:
         """Add a new channel for forced subscription. Returns the record ID."""
         db = await Database.connect()
         cursor = await db.execute(
-            "INSERT OR IGNORE INTO channels (channel_id, channel_link) VALUES (?, ?)",
-            (channel_id, channel_link),
+            "INSERT OR IGNORE INTO channels (channel_id, channel_name, channel_link) VALUES (?, ?, ?)",
+            (channel_id, channel_name, channel_link),
         )
         await db.commit()
         return cursor.lastrowid

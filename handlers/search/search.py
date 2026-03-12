@@ -94,7 +94,7 @@ async def search_top(message: Message) -> None:
     medals = ["🥇", "🥈", "🥉", "◈", "◈"]
     for i, anime in enumerate(results[:5]):
         medal = medals[i] if i < len(medals) else "◈"
-        text += f"{medal} <b>{anime['title']}</b>\n   └ 👁 {anime['views']}\n"
+        text += f"{medal} <b>{anime['title']}</b>\n   └ 👁 {anime['views']} • ⏳ {anime.get('status', '??')}\n"
     
     await message.answer(
         text,
@@ -185,10 +185,10 @@ async def _show_search_results(message: Message, results: list, page: int, total
     """Qidiruv natijalarini inline keyboard bilan ko'rsatish."""
     text = (
         f"<b>🔍 Qidiruv natijalari:</b>\n"
-        f"━━━━━━━━━━━━━━━━━━\n"
-        f"Jami topildi: {len(results)} ta\n"
-        f"Sahifa: {page + 1}\n\n"
-        f"Kerakli animeni tanlang:"
+        f"━━━━━━━━━━━━━━━━━━\n\n"
+        f"Topildi: <b>{len(results)}</b> ta anime\n"
+        f"Sahifa: <b>{page + 1}/{total_pages}</b>\n\n"
+        f"◈ <i>Kerakli animeni tanlang:</i>"
     )
     await message.answer(
         text,
@@ -258,10 +258,44 @@ async def process_search_pagination(callback: CallbackQuery) -> None:
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("anime:"))
+@router.callback_query(F.data.startswith("anime_details:"))
 async def show_anime_callback(callback: CallbackQuery) -> None:
-    """Natijalardan anime tanlanganda ko'rsatish."""
+    """Natijalardan anime tanlanganda ko'rsatish (Seamless Audit)."""
     anime_id = int(callback.data.split(":")[1])
-    # Eski xabarni o'chirish yoki o'zgartirish o'rniga yangi answer_photo ishlatish yaxshiroq (poster uchun)
-    await _show_anime_view(callback.message, anime_id)
+    
+    anime = await AnimeModel.get_by_id(anime_id)
+    if not anime:
+        await callback.answer("Anime topilmadi.")
+        return
+
+    await AnimeModel.increment_views(anime_id)
+    db_user = await UserModel.get_by_telegram_id(callback.from_user.id)
+    is_fav = await FavoritesModel.is_favorite(db_user["id"], anime_id) if db_user else False
+    
+    text = await AnimeService.get_anime_info_text(anime_id)
+    poster = AnimeService.get_poster(anime)
+    
+    # Switch from Search Result Text to Anime Poster Seamlessly
+    success = await MediaService.replace_media_with_photo(
+        callback=callback,
+        photo=poster,
+        caption=text,
+        reply_markup=anime_view_keyboard(anime_id, is_fav),
+        context_info=f"Search Detail View: {anime['title']} (ID: {anime_id})"
+    )
+    
+    if not success:
+        # Fallback to answer_photo if editing text to photo fails
+        await MediaService.send_photo(
+            event=callback,
+            photo=poster,
+            caption=text,
+            reply_markup=anime_view_keyboard(anime_id, is_fav),
+            context_info=f"Search Detail View Fallback: {anime['title']} (ID: {anime_id})"
+        )
+        try:
+            await callback.message.delete()
+        except Exception:
+            pass
+
     await callback.answer()

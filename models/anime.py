@@ -19,6 +19,8 @@ class AnimeModel:
         total_episodes: int,
         poster_file_id: str = "",
         poster_url: str = "",
+        status: str = "Tugallangan",
+        translator: str = "AniBro",
         is_vip: int = 0,
     ) -> int:
         """Insert a new anime record and return its ID."""
@@ -33,8 +35,8 @@ class AnimeModel:
         cursor = await db.execute(
             """
             INSERT INTO anime (title, code, description, genre, season_count,
-                               total_episodes, poster_file_id, poster_url, is_vip)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                               total_episodes, poster_file_id, poster_url, status, translator, is_vip)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 str(title).strip(), 
@@ -45,6 +47,8 @@ class AnimeModel:
                 int(total_episodes), 
                 str(poster_file_id).strip(), 
                 str(poster_url).strip(), 
+                str(status).strip(),
+                str(translator).strip(),
                 int(is_vip)
             ),
         )
@@ -81,6 +85,10 @@ class AnimeModel:
             kwargs["season_count"] = int(kwargs["season_count"])
         if "total_episodes" in kwargs:
             kwargs["total_episodes"] = int(kwargs["total_episodes"])
+        if "status" in kwargs:
+            kwargs["status"] = str(kwargs["status"]).strip()
+        if "translator" in kwargs:
+            kwargs["translator"] = str(kwargs["translator"]).strip()
             
         set_clause = ", ".join(f"{k} = ?" for k in kwargs)
         values = list(kwargs.values()) + [anime_id]

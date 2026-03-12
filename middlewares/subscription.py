@@ -59,7 +59,8 @@ class SubscriptionMiddleware(BaseMiddleware):
 
         if not_subscribed:
             await event.answer(
-                "<b>\u25A0 Majburiy obuna</b>\n\n"
+                "<b>🔒 Majburiy obuna</b>\n"
+                "━━━━━━━━━━━━━━━━━━\n\n"
                 "Botdan foydalanish uchun quyidagi kanallarga obuna bo'ling:\n",
                 reply_markup=subscription_keyboard(not_subscribed),
             )

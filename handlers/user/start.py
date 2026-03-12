@@ -25,6 +25,7 @@ from config import ADMIN_IDS
 
 logger = logging.getLogger(__name__)
 router = Router(name="user_start")
+low_priority_router = Router(name="user_low_priority")
 
 
 @router.message(CommandStart())
@@ -107,12 +108,14 @@ async def cmd_start(message: Message, state: FSMContext) -> None:
 
     # Xush kelibsiz xabari
     welcome_text = (
-        f"<b>👋 As-salomu alaykum, {user.full_name}!</b>\n"
+        f"<b>🎬 Assalomu alaykum, {user.full_name}!</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"◈ <b>AnimeBot-ga xush kelibsiz!</b>\n"
-        f"▹ Siz bu yerda eng sara va ommabop animelarni\n"
-        f"▹ O'zbek tilida, HD sifatda tomosha qilishingiz mumkin.\n\n"
-        f"⬇️ <b>Kerakli bo'limni tanlang:</b>"
+        f"▹ Eng sara va ommabop animelar olami.\n"
+        f"▹ O'zbek tilida, HD sifat va qulay interfeys.\n"
+        f"▹ Ma'lumotlar va qismlar har doim yangilanadi.\n\n"
+        f"💎 <i>Sifatli tomoshadan bahra oling!</i>\n\n"
+        f"🔘 <b>Kerakli bo'limni tanlang:</b>"
     )
     
     try:
@@ -197,3 +200,42 @@ async def check_sub(callback: CallbackQuery) -> None:
         reply_markup=user_main_menu(),
     )
     await callback.answer()
+
+
+@low_priority_router.message(F.text)
+async def global_code_search(message: Message, state: FSMContext) -> None:
+    """Foydalanuvchi anime kodini yuborganda qidirish."""
+    code = message.text.strip().lower()
+    
+    # Buyruqlarni o'tkazib yuboramiz
+    if code.startswith("/"):
+        return
+        
+    anime = await AnimeModel.get_by_code(code)
+    if not anime:
+        # Agar kod topilmasa, shunchaki xabar beramiz yoki e'tiborsiz qoldiramiz
+        # User request: "foydalanuvch holohlagan payt kod yuborsa anime qdrsh kerak"
+        # Biz faqat kod topilsagina javob beramiz, aks holda e'tiborsiz qoldiramiz (gaplashish uchun emas, kod uchun)
+        return
+
+    anime_id = anime["id"]
+    await AnimeModel.increment_views(anime_id)
+    
+    user = await UserModel.get_by_telegram_id(message.from_user.id)
+    is_fav = await FavoritesModel.is_favorite(user["id"], anime_id) if user else False
+    
+    text = await AnimeService.get_anime_info_text(anime_id)
+    poster = AnimeService.get_poster(anime)
+    
+    if poster:
+        await MediaService.send_photo(
+            event=message,
+            photo=poster,
+            caption=text,
+            reply_markup=anime_view_keyboard(anime_id, is_fav),
+            context_info=f"Code Search: {anime['title']} (ID: {anime_id})"
+        )
+    else:
+        await message.answer(
+            text, reply_markup=anime_view_keyboard(anime_id, is_fav)
+        )

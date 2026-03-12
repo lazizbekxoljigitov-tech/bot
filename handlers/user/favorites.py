@@ -24,9 +24,10 @@ async def show_favorites(message: Message) -> None:
     
     if not favs:
         text = (
-            "<b>⭐️ Sevimlilar</b>\n"
+            "<b>⭐ Mening Sevimlilarim</b>\n"
             "━━━━━━━━━━━━━━━━━━\n\n"
-            "Sizda hali sevimlilar yo'q. 🔍 Anime qidirish bo'limidan animelarni toping va sevimlilarga qo'shing!"
+            "Sizda hali saqlangan animelar yo'q.\n\n"
+            "◈ <i>Anime qidirish bo'limidan animelarni toping va sevimlilarga qo'shing!</i>"
         )
         try:
             await MediaService.send_photo(

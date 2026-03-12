@@ -40,3 +40,6 @@ SHORTS_PER_PAGE: int = 1
 
 # ---- VIP payment card number (admin sets this) ----
 VIP_CARD_NUMBER: str = os.getenv("VIP_CARD_NUMBER", "8600 0000 0000 0000")
+
+# ---- Channel settings ----
+NEWS_CHANNEL: str = os.getenv("NEWS_CHANNEL", "@Ani_Makon")

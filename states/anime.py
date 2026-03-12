@@ -13,6 +13,8 @@ class AddAnimeStates(StatesGroup):
     genre = State()          # Janri
     season_count = State()   # Sezonlar soni
     total_episodes = State() # Umumiy qismlar soni
+    status = State()         # Holat (Tugallangan/Davom etmoqda)
+    translator = State()     # Tarjimon (Gr guruh/kanal)
     poster = State()         # Poster rasm (file_id)
     is_vip = State()         # VIP yoki oddiy
 

@@ -14,5 +14,5 @@ class ChannelPostStates(StatesGroup):
 
 class AddChannelStates(StatesGroup):
     """Yangi kanal qo'shish holatlari (majburiy obuna)."""
-    channel_id = State()
+    channel_name = State()
     channel_link = State()

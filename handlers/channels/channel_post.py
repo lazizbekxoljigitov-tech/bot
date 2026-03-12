@@ -32,11 +32,13 @@ async def channel_post_start(message: Message, state: FSMContext) -> None:
     """Kanalga post - anime tanlash."""
     anime_list = await AnimeModel.get_all(limit=50)
     if not anime_list:
-        await message.answer("\u25B8 Avval anime qo'shing.")
+        await message.answer("▹ Avval anime qo'shing.")
         return
     await state.set_state(ChannelPostStates.select_anime)
     await message.answer(
-        "<b>\u27A4 Kanalga post</b>\n\nPost uchun animeni tanlang:",
+        "<b>📢 Kanalga post</b>\n"
+        "━━━━━━━━━━━━━━━━━━\n\n"
+        "◈ Post uchun animeni tanlang:",
         reply_markup=anime_select_keyboard(anime_list, "ch_post_anime"),
     )
 
@@ -47,11 +49,13 @@ async def channel_post_anime_selected(callback: CallbackQuery, state: FSMContext
     await state.update_data(post_anime_id=anime_id)
     await state.set_state(ChannelPostStates.enter_channel)
     await callback.message.edit_text(
-        "\u25B8 Kanalning ID yoki username kiriting\n\n"
+        "<b>📢 Kanalni tanlang</b>\n"
+        "━━━━━━━━━━━━━━━━━━\n\n"
+        "◈ Kanalning ID yoki username kiriting\n\n"
         "Masalan:\n"
         "  <code>-100123456789</code>\n"
         "  <code>@kanal_nomi</code>\n\n"
-        "Bot o'sha kanalda admin bo'lishi shart!"
+        "<i>Bot o'sha kanalda admin bo'lishi shart!</i>"
     )
     await callback.answer()
 
@@ -62,7 +66,7 @@ async def channel_entered(message: Message, state: FSMContext) -> None:
     await state.update_data(target_channel=channel_input)
     await state.set_state(ChannelPostStates.select_format)
     await message.answer(
-        f"\u25B8 Kanal: <code>{channel_input}</code>\n\n"
+        f"◈ Kanal: <code>{channel_input}</code>\n\n"
         "Post formatini tanlang:",
         reply_markup=channel_post_menu(),
     )
@@ -77,7 +81,7 @@ async def send_channel_post(message: Message, state: FSMContext) -> None:
 
     anime = await AnimeModel.get_by_id(anime_id)
     if not anime:
-        await message.answer("\u2716 Anime topilmadi.", reply_markup=admin_main_menu())
+        await message.answer("✖ Anime topilmadi.", reply_markup=admin_main_menu())
         return
 
     bot_info = await bot.get_me()
@@ -85,8 +89,8 @@ async def send_channel_post(message: Message, state: FSMContext) -> None:
 
     try:
         if message.text == "🖼 Katta post":
-            # Katta post: poster + to'liq info + tugmalar
-            text = await AnimeService.get_anime_info_text(anime_id)
+            # Katta post: premium formatting
+            text = await AnimeService.get_channel_post_text(anime_id)
             poster = AnimeService.get_poster(anime)
             
             if poster:
@@ -103,30 +107,25 @@ async def send_channel_post(message: Message, state: FSMContext) -> None:
                     reply_markup=channel_big_post_keyboard(anime_id, bot_username),
                 )
             await message.answer(
-                f"\u2714 Katta post <code>{channel}</code> kanalga yuborildi!",
+                f"✔ <b>Katta post kanalga yuborildi!</b>\n└ Kanal: <code>{channel}</code>",
                 reply_markup=admin_main_menu(),
             )
 
         elif message.text == "📄 Kichik post":
-            # Kichik post: nom + qism soni + tugma
-            ep_count = await EpisodeModel.get_episode_count(anime_id)
-            text = (
-                f"<b>{anime['title']}</b>\n"
-                f"\u25B8 Qismlar: {ep_count}\n"
-                f"\u25B8 Janr: {anime['genre']}"
-            )
+            # Kichik post: concise formatting
+            text = await AnimeService.get_small_post_text(anime)
             await bot.send_message(
                 chat_id=channel,
                 text=text,
                 reply_markup=channel_post_keyboard(anime_id, bot_username),
             )
             await message.answer(
-                f"\u2714 Kichik post <code>{channel}</code> kanalga yuborildi!",
+                f"✔ <b>Kichik post kanalga yuborildi!</b>\n└ Kanal: <code>{channel}</code>",
                 reply_markup=admin_main_menu(),
             )
         else:
             await message.answer(
-                "\u25B8 Iltimos, format tugmasini bosing.",
+                "▹ Iltimos, format tugmasini bosing.",
                 reply_markup=channel_post_menu(),
             )
             return
@@ -134,7 +133,7 @@ async def send_channel_post(message: Message, state: FSMContext) -> None:
     except Exception as e:
         logger.error("Kanalga post xatolik: %s", str(e))
         await message.answer(
-            f"\u2716 Xatolik! Kanalga post yuborib bo'lmadi.\n\n"
+            f"✖ Xatolik! Kanalga post yuborib bo'lmadi.\n\n"
             f"Sabab: <code>{str(e)[:200]}</code>\n\n"
             "Bot o'sha kanalda admin ekanligini tekshiring.",
             reply_markup=admin_main_menu(),

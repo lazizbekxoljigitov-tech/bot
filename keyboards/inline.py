@@ -12,42 +12,30 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 # ==============================================================
 
 def anime_view_keyboard(anime_id: int, is_favorite: bool = False) -> InlineKeyboardMarkup:
-    """Anime ko'rish sahifasidagi inline tugmalar."""
-    fav_text = "💔 Sevimlilardan chiqarish" if is_favorite else "⭐️ Sevimlilarga qo'shish"
+    """Anime ko'rish sahifasidagi premium inline tugmalar."""
+    builder = InlineKeyboardBuilder()
+    
+    # Row 1: Primary action
+    builder.row(InlineKeyboardButton(text="▶️ Tomosha qilish", callback_data=f"watch:{anime_id}"))
+    
+    # Row 2: Secondary actions
+    fav_text = "⭐ Sevimlilarda" if is_favorite else "➕ Sevimlilarga"
     fav_action = "unfav" if is_favorite else "fav"
-
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="▶️ Tomosha qilish",
-                    callback_data=f"watch:{anime_id}",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    text=fav_text,
-                    callback_data=f"{fav_action}:{anime_id}",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    text="✍️ Izoh qoldirish",
-                    callback_data=f"comment:{anime_id}",
-                ),
-                InlineKeyboardButton(
-                    text="💬 Izohlar",
-                    callback_data=f"comments_list:{anime_id}:0",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    text="⬅️ Orqaga",
-                    callback_data="back_to_menu",
-                ),
-            ],
-        ]
+    builder.row(
+        InlineKeyboardButton(text=fav_text, callback_data=f"{fav_action}:{anime_id}"),
+        InlineKeyboardButton(text="🔗 Ulashish", switch_inline_query=f"anime_{anime_id}")
     )
+    
+    # Row 3: Community
+    builder.row(
+        InlineKeyboardButton(text="✍️ Izohlar", callback_data=f"comments_list:{anime_id}:0"),
+        InlineKeyboardButton(text="💬 Fikr bildirish", callback_data=f"comment:{anime_id}")
+    )
+    
+    # Row 4: Navigation
+    builder.row(InlineKeyboardButton(text="⬅️ Bosh sahifa", callback_data="back_to_menu"))
+    
+    return builder.as_markup()
 
 
 # ==============================================================
@@ -58,15 +46,9 @@ def seasons_keyboard(anime_id: int, seasons: list[int]) -> InlineKeyboardMarkup:
     """Anime sezonlari ro'yxati tugmalari."""
     builder = InlineKeyboardBuilder()
     for s in seasons:
-        builder.button(
-            text=f"🎞 {s}",
-            callback_data=f"season:{anime_id}:{s}:0",
-        )
-    builder.button(
-        text="⬅️ Orqaga",
-        callback_data=f"anime:{anime_id}",
-    )
+        builder.button(text=f"{s}-sezon", callback_data=f"season:{anime_id}:{s}:0")
     builder.adjust(2)
+    builder.row(InlineKeyboardButton(text="⬅️ Orqaga", callback_data=f"anime_details:{anime_id}"))
     return builder.as_markup()
 
 
@@ -82,54 +64,34 @@ def episodes_keyboard(
     total_pages: int,
     is_single_season: bool = False,
 ) -> InlineKeyboardMarkup:
-    """Qismlar ro'yxati va pagination tugmalari."""
+    """Qismlar ro'yxati va pagination tugmalari (Ixcham)."""
     builder = InlineKeyboardBuilder()
 
+    # 4 tadan qilib taxlaymiz - juda qulay
     for ep in episodes:
-        vip_mark = " 💎" if ep["is_vip"] else ""
         builder.button(
-            text=f"▶️ {ep['episode_number']}{vip_mark}",
+            text=f"{ep['episode_number']}",
             callback_data=f"episode:{ep['id']}",
         )
+    builder.adjust(4)
 
-    builder.adjust(3)
-
-    # Pagination row
+    # Paginatsiya
     nav_buttons = []
     if page > 0:
-        nav_buttons.append(
-            InlineKeyboardButton(
-                text="⬅️ Oldingi",
-                callback_data=f"season:{anime_id}:{season}:{page - 1}",
-            )
-        )
-    nav_buttons.append(
-        InlineKeyboardButton(
-            text=f"📄 {page + 1}/{total_pages}",
-            callback_data="noop",
-        )
-    )
+        nav_buttons.append(InlineKeyboardButton(text="◀️", callback_data=f"season:{anime_id}:{season}:{page - 1}"))
+    
+    nav_buttons.append(InlineKeyboardButton(text=f"{page + 1}/{total_pages}", callback_data="noop"))
+    
     if page < total_pages - 1:
-        nav_buttons.append(
-            InlineKeyboardButton(
-                text="Keyingi ➡️",
-                callback_data=f"season:{anime_id}:{season}:{page + 1}",
-            )
-        )
+        nav_buttons.append(InlineKeyboardButton(text="▶️", callback_data=f"season:{anime_id}:{season}:{page + 1}"))
 
-    if nav_buttons:
+    if len(nav_buttons) > 1:
         builder.row(*nav_buttons)
 
-    # Orqaga tugmasi
-    back_text = "⬅️ Orqaga" if is_single_season else "⬅️ Sezonlarga qaytish"
-    back_callback = f"anime:{anime_id}" if is_single_season else f"watch:{anime_id}"
-    
-    builder.row(
-        InlineKeyboardButton(
-            text=back_text,
-            callback_data=back_callback,
-        )
-    )
+    # Orqaga
+    back_text = "⬅️ Orqaga"
+    back_callback = f"anime_details:{anime_id}" if is_single_season else f"watch:{anime_id}"
+    builder.row(InlineKeyboardButton(text=back_text, callback_data=back_callback))
 
     return builder.as_markup()
 
@@ -139,23 +101,19 @@ def episodes_keyboard(
 # ==============================================================
 
 def episode_view_keyboard(anime_id: int, episode_id: int) -> InlineKeyboardMarkup:
-    """Qism tomosha qilish tugmalari."""
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="⬅️ Qismlarga qaytish",
-                    callback_data=f"watch:{anime_id}",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    text="🏠 Anime sahifasi",
-                    callback_data=f"anime:{anime_id}",
-                ),
-            ],
-        ]
+    """Video ko'p ko'rilayotganda qulay navigatsiya."""
+    builder = InlineKeyboardBuilder()
+    
+    # Row 1: Listga qaytish
+    builder.row(InlineKeyboardButton(text="📁 Barcha qismlar", callback_data=f"watch:{anime_id}"))
+    
+    # Row 2: Secondary
+    builder.row(
+        InlineKeyboardButton(text="🏠 Anime sahifasi", callback_data=f"anime_details:{anime_id}"),
+        InlineKeyboardButton(text="🚀 Ulashish", switch_inline_query=f"anime_{anime_id}")
     )
+    
+    return builder.as_markup()
 
 
 # ==============================================================
@@ -171,7 +129,7 @@ def search_results_keyboard(
     for anime in results:
         builder.button(
             text=f"📺 {anime['title']}",
-            callback_data=f"anime:{anime['id']}",
+            callback_data=f"anime_details:{anime['id']}",
         )
 
     builder.adjust(1)
@@ -363,8 +321,9 @@ def subscription_keyboard(channels: list[dict]) -> InlineKeyboardMarkup:
     """Majburiy obuna kanallari."""
     builder = InlineKeyboardBuilder()
     for ch in channels:
+        name = ch.get("channel_name") or "Kanalga o'tish"
         builder.button(
-            text=f"📢 Kanalga o'tish",
+            text=f"📢 {name}",
             url=ch["channel_link"],
         )
     builder.adjust(1)
@@ -374,6 +333,18 @@ def subscription_keyboard(channels: list[dict]) -> InlineKeyboardMarkup:
             callback_data="check_subscription",
         )
     )
+    return builder.as_markup()
+
+
+def admin_channels_keyboard(channels: list[dict]) -> InlineKeyboardMarkup:
+    """Admin uchun kanallarni o'chirish klaviaturasi."""
+    builder = InlineKeyboardBuilder()
+    for ch in channels:
+        builder.button(
+            text=f"❌ {ch['channel_name']}",
+            callback_data=f"del_channel:{ch['channel_id']}",
+        )
+    builder.adjust(1)
     return builder.as_markup()
 
 
@@ -456,23 +427,17 @@ def channel_post_keyboard(anime_id: int, bot_username: str) -> InlineKeyboardMar
 
 
 def channel_big_post_keyboard(anime_id: int, bot_username: str) -> InlineKeyboardMarkup:
-    """Katta post uchun tugmalar."""
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="▶️ Tomosha qilish",
-                    url=f"https://t.me/{bot_username}?start=anime_{anime_id}",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    text="⭐️ Sevimlilarga qo'shish",
-                    url=f"https://t.me/{bot_username}?start=fav_{anime_id}",
-                ),
-            ],
-        ]
+    """Katta post uchun tugmalar (Premium & Compact)."""
+    builder = InlineKeyboardBuilder()
+    
+    builder.row(InlineKeyboardButton(text="▶️ Tomosha qilish", url=f"https://t.me/{bot_username}?start=anime_{anime_id}"))
+    
+    builder.row(
+        InlineKeyboardButton(text="⭐ Sevimlilar", url=f"https://t.me/{bot_username}?start=fav_{anime_id}"),
+        InlineKeyboardButton(text="🤖 Botga o'tish", url=f"https://t.me/{bot_username}")
     )
+    
+    return builder.as_markup()
 # ==============================================================
 # ADMIN DASHBOARD KEYBOARDS
 # ==============================================================

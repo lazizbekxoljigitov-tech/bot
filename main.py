@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 def register_routers() -> None:
     """Barcha routerlarni dispatcherga ro'yxatdan o'tkazish."""
-    from handlers.user.start import router as start_router
+    from handlers.user.start import router as start_router, low_priority_router
     from handlers.user.profile import router as profile_router
     from handlers.user.favorites import router as favorites_router
     from handlers.user.shorts import router as shorts_router
@@ -71,6 +71,7 @@ def register_routers() -> None:
         broadcast_router,
         channel_post_router,
         vip_plans_router,
+        low_priority_router,
     )
 
 
@@ -92,15 +93,6 @@ async def on_startup() -> None:
     from config import DB_PATH
     import os
     
-    # ---- MA'LUMOTLAR BAZASINI TOZALASH (User Request: Clean Start) ----
-    # Har doim yangidan boshlash uchun eski bazani o'chirib yuboramiz
-    if os.path.exists(DB_PATH):
-        try:
-            os.remove(DB_PATH)
-            logger.info("Eski ma'lumotlar bazasi o'chirildi (Clean Start).")
-        except Exception as e:
-            logger.warning(f"Bazani o'chirishda xatolik: {e}")
-
     # Papka mavjudligini tekshirish
     db_dir = os.path.dirname(DB_PATH)
     os.makedirs(db_dir, exist_ok=True)
